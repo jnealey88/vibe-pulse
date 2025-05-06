@@ -52,7 +52,7 @@ export const openAiService = {
       if (historicalData && historicalData.landingPages && historicalData.landingPages.length > 0) {
         landingPageAnalysis = "Top landing pages performance:\n" + 
           historicalData.landingPages.map((page: any) => 
-            `- ${page.page}: ${page.visitors} visitors, ${page.bounceRate} bounce rate, ${page.conversions} conversions`
+            `- ${page.page}: ${page.visitors} visitors, ${page.bounceRate} bounce rate`
           ).join("\n");
       }
       
@@ -60,7 +60,7 @@ export const openAiService = {
       if (historicalData && historicalData.trafficSources && historicalData.trafficSources.length > 0) {
         trafficSourceAnalysis = "Traffic sources:\n" + 
           historicalData.trafficSources.map((source: any) => 
-            `- ${source.source}: ${source.visitors} visitors, ${source.bounceRate} bounce rate, ${source.conversions} conversions`
+            `- ${source.source}: ${source.visitors} visitors, ${source.bounceRate} bounce rate`
           ).join("\n");
       }
 
@@ -164,7 +164,7 @@ export const openAiService = {
       if (historicalData && historicalData.landingPages && historicalData.landingPages.length > 0) {
         landingPageSection = "\nTop landing pages:\n" + 
           historicalData.landingPages.slice(0, 5).map((page: any) => 
-            `- ${page.page}: ${page.visitors} visitors, ${page.bounceRate} bounce rate, ${page.conversions} conversions`
+            `- ${page.page}: ${page.visitors} visitors, ${page.bounceRate} bounce rate`
           ).join("\n");
       }
       
@@ -172,7 +172,7 @@ export const openAiService = {
       if (historicalData && historicalData.trafficSources && historicalData.trafficSources.length > 0) {
         trafficSourceSection = "\nTop traffic sources:\n" + 
           historicalData.trafficSources.slice(0, 5).map((source: any) => 
-            `- ${source.source}: ${source.visitors} visitors, ${source.bounceRate} bounce rate, ${source.conversions} conversions`
+            `- ${source.source}: ${source.visitors} visitors, ${source.bounceRate} bounce rate`
           ).join("\n");
       }
       
@@ -189,13 +189,10 @@ export const openAiService = {
           const avgVisitorsSecondHalf = secondHalf.reduce((sum: number, day: any) => sum + day.visitors, 0) / secondHalf.length;
           const visitorsTrend = avgVisitorsSecondHalf > avgVisitorsFirstHalf ? "increasing" : "decreasing";
           
-          const avgConversionsFirstHalf = firstHalf.reduce((sum: number, day: any) => sum + day.conversions, 0) / firstHalf.length;
-          const avgConversionsSecondHalf = secondHalf.reduce((sum: number, day: any) => sum + day.conversions, 0) / secondHalf.length;
-          const conversionsTrend = avgConversionsSecondHalf > avgConversionsFirstHalf ? "increasing" : "decreasing";
+          // Removed conversions data analysis per client request
           
           historicalSection = `\nHistorical trends (${historicalData.periodCovered}):\n` +
-            `- Visitor trend: ${visitorsTrend} (${avgVisitorsFirstHalf.toFixed(1)} to ${avgVisitorsSecondHalf.toFixed(1)} average daily visitors)\n` +
-            `- Conversion trend: ${conversionsTrend} (${avgConversionsFirstHalf.toFixed(1)} to ${avgConversionsSecondHalf.toFixed(1)} average daily conversions)`;
+            `- Visitor trend: ${visitorsTrend} (${avgVisitorsFirstHalf.toFixed(1)} to ${avgVisitorsSecondHalf.toFixed(1)} average daily visitors)`;
         }
       }
 
