@@ -10,6 +10,7 @@ import MetricsOverview from "@/components/dashboard/MetricsOverview";
 import InsightCard from "@/components/dashboard/InsightCard";
 import InsightsFilter from "@/components/dashboard/InsightsFilter";
 import GenerateReport from "@/components/dashboard/GenerateReport";
+import AddWebsiteModal from "@/components/dashboard/AddWebsiteModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +26,7 @@ const Dashboard = () => {
     impact: "All Impacts",
   });
   const [insightPage, setInsightPage] = useState(1);
+  const [isAddWebsiteModalOpen, setIsAddWebsiteModalOpen] = useState(false);
   
   const { isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
@@ -208,7 +210,7 @@ const Dashboard = () => {
                 <span className="material-icons text-3xl text-muted-foreground mb-2">info</span>
                 <h3 className="font-google-sans font-medium text-lg mb-2">No Website Connected</h3>
                 <p className="text-muted-foreground mb-4">Connect a website to get started with analytics and insights</p>
-                <Button>Add Website</Button>
+                <Button onClick={() => setIsAddWebsiteModalOpen(true)}>Add Website</Button>
               </CardContent>
             </Card>
           )}
