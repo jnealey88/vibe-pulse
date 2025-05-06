@@ -144,7 +144,19 @@ const Dashboard = () => {
   };
 
   const handleLoadMoreInsights = () => {
-    setInsightPage((prev) => prev + 1);
+    if (selectedWebsiteId) {
+      generateInsightsMutation.mutate();
+      toast({
+        title: "Generating new insights",
+        description: "We're analyzing your data to create fresh insights",
+      });
+    } else {
+      toast({
+        title: "No website selected",
+        description: "Please select a website to generate insights",
+        variant: "destructive",
+      });
+    }
   };
 
   const selectedWebsite = websites?.find(
@@ -168,18 +180,18 @@ const Dashboard = () => {
         <main className="py-6 px-6">
           {/* Dashboard Header */}
           <div className="mb-8">
-            <h2 className="text-2xl font-medium font-google-sans mb-2">Dashboard</h2>
-            <p className="text-muted-foreground">AI-powered insights from your Google Analytics 4 data</p>
+            <h2 className="text-2xl font-semibold font-google-sans mb-2 text-foreground">Website Performance</h2>
+            <p className="text-muted-foreground">AI-powered insights and analytics from Airo Pulse</p>
           </div>
           
           {/* Connection Status */}
           {selectedWebsite ? (
-            <div className="mb-8 bg-white rounded-lg border border-border shadow-sm p-4">
+            <div className="mb-8 bg-white rounded-lg border border-border shadow-sm p-5">
               <div className="flex items-center justify-between flex-wrap md:flex-nowrap gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="material-icons text-secondary">check_circle</span>
+                  <span className="material-icons text-primary">signal_cellular_alt</span>
                   <div>
-                    <h3 className="font-google-sans font-medium">Connected to Google Analytics 4</h3>
+                    <h3 className="font-google-sans font-semibold">Analytics Connection</h3>
                     <p className="text-sm text-muted-foreground">
                       {metrics && metrics.updatedAt ? (
                         `Last synced: ${new Date(metrics.updatedAt).toLocaleString()}`
@@ -194,8 +206,8 @@ const Dashboard = () => {
                   disabled={syncMetricsMutation.isPending}
                   className="w-full md:w-auto"
                 >
-                  <span className="material-icons text-sm mr-2">refresh</span>
-                  {syncMetricsMutation.isPending ? "Syncing..." : "Sync Now"}
+                  <span className="material-icons text-sm mr-2">update</span>
+                  {syncMetricsMutation.isPending ? "Syncing..." : "Refresh Data"}
                 </Button>
               </div>
             </div>
@@ -227,7 +239,7 @@ const Dashboard = () => {
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
               <div className="flex items-center justify-between w-full md:w-auto">
-                <h3 className="text-xl font-medium font-google-sans">AI-Powered Insights</h3>
+                <h3 className="text-xl font-semibold font-google-sans text-foreground">Smart Insights</h3>
                 {selectedWebsite && (
                   <Button 
                     variant="outline" 
@@ -329,8 +341,6 @@ const Dashboard = () => {
               </div>
             )}
           </div>
-          
-
           
           {/* Add Website Modal */}
           <AddWebsiteModal 
