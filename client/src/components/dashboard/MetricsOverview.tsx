@@ -1,6 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Metric } from "@/types/metric";
+import DistributionChart from "./DistributionChart";
+import DataTable from "./DataTable";
+import CountryMap from "./CountryMap";
 
 interface MetricsOverviewProps {
   metrics: Metric | null;
@@ -44,8 +47,6 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     );
   }
 
-  // We're not using core metrics anymore as per request
-  
   // Second row - additional metrics requested by user
   const additionalMetricCards = [
     {
@@ -79,10 +80,37 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
       iconColor: "text-cyan-500",
     },
   ];
-
-  const isTrendUp = (change: string) => {
-    return change.includes('+');
-  };
+  
+  // Prepare data for distribution charts
+  
+  // 1. Sessions by Channel
+  const sessionsByChannelData = metrics.sessionsByChannel ? 
+    Object.entries(metrics.sessionsByChannel).map(([name, value]) => ({ name, value })) : 
+    [];
+  
+  // 2. Sessions by Source
+  const sessionsBySourceData = metrics.sessionsBySource ? 
+    Object.entries(metrics.sessionsBySource).map(([name, value]) => ({ name, value })) : 
+    [];
+  
+  // 3. Views by Page
+  const viewsByPageData = metrics.viewsByPage ?
+    Object.entries(metrics.viewsByPage).map(([name, value]) => ({ name, value })) :
+    [];
+  
+  // 4. Users by Country
+  const usersByCountryData = metrics.usersByCountry ?
+    Object.entries(metrics.usersByCountry).map(([code, value]) => ({ 
+      code, 
+      name: getCountryName(code), 
+      value 
+    })) :
+    [];
+    
+  // Calculate user stickiness (DAU/MAU ratio)
+  const userStickiness = metrics.activeUsers && metrics.visitors ? 
+    Math.min(100, Math.round((metrics.activeUsers / metrics.visitors) * 100)) : 
+    0;
 
   return (
     <div className="space-y-8">
@@ -106,11 +134,105 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
         </div>
       </div>
       
-      {/* TODO: Add distribution charts section for channels, sources, pages, countries */}
-      {/* These will be charts built using the "sessionsByChannel", "sessionsBySource", */}
-      {/* "viewsByPage" and "usersByCountry" data */}
+      {/* User Stickiness Card */}
+      <div>
+        <h3 className="text-xl font-medium font-google-sans mb-4">User Stickiness</h3>
+        <div className="grid grid-cols-1 gap-6">
+          <Card className="border border-border shadow-sm">
+            <CardContent className="pt-5">
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-muted-foreground font-google-sans">DAU/MAU Ratio</span>
+                <span className="material-icons text-blue-500">loyalty</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-3xl font-medium font-google-sans">{userStickiness}%</span>
+                <span className="text-sm text-muted-foreground">
+                  {userStickiness < 20 ? 'Low' : userStickiness < 50 ? 'Average' : 'High'} user engagement
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      
+      {/* Traffic Sources Section */}
+      <div>
+        <h3 className="text-xl font-medium font-google-sans mb-4">Traffic Sources</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DistributionChart 
+            title="Sessions by Channel" 
+            data={sessionsByChannelData}
+            description="Distribution of sessions by primary channel group"
+          />
+          <DistributionChart 
+            title="Sessions by Source" 
+            data={sessionsBySourceData}
+            description="Distribution of sessions by traffic source"
+          />
+        </div>
+      </div>
+      
+      {/* Content Performance Section */}
+      <div>
+        <h3 className="text-xl font-medium font-google-sans mb-4">Content Performance</h3>
+        <div className="grid grid-cols-1 gap-6">
+          <DataTable 
+            title="Views by Page Title"
+            data={viewsByPageData}
+            columns={[
+              { name: 'Page Title', key: 'name' },
+              { 
+                name: 'Views', 
+                key: 'value',
+                formatter: (value) => value.toLocaleString()
+              },
+              { 
+                name: 'Share', 
+                key: 'value',
+                formatter: (value) => {
+                  const total = viewsByPageData.reduce((sum, item) => sum + item.value, 0);
+                  return total > 0 ? `${Math.round((value / total) * 100)}%` : '0%';
+                }
+              }
+            ]}
+          />
+        </div>
+      </div>
+      
+      {/* Geographic Distribution Section */}
+      <div>
+        <h3 className="text-xl font-medium font-google-sans mb-4">Geographic Distribution</h3>
+        <div className="grid grid-cols-1 gap-6">
+          <CountryMap 
+            title="Users by Country"
+            data={usersByCountryData}
+            description="Geographic distribution of your users"
+          />
+        </div>
+      </div>
     </div>
   );
 };
+
+// Helper function to get country name from country code
+function getCountryName(countryCode: string): string {
+  // This would ideally use a proper country code library
+  // For now, we'll return a simplified version
+  const countryMap: {[key: string]: string} = {
+    'US': 'United States',
+    'GB': 'United Kingdom',
+    'CA': 'Canada',
+    'AU': 'Australia',
+    'DE': 'Germany',
+    'FR': 'France',
+    'IN': 'India',
+    'JP': 'Japan',
+    'BR': 'Brazil',
+    'MX': 'Mexico',
+    // Add more as needed
+  };
+  
+  return countryMap[countryCode] || countryCode;
+}
 
 export default MetricsOverview;
