@@ -80,14 +80,25 @@ export const insightController = {
       // Authenticate with Google
       const authClient = await ga4Service.authenticate(user.refreshToken);
       
-      // Fetch historical data for context
+      // Fetch comprehensive GA4 metrics for OpenAI analysis
+      let gaMetricsData = null;
+      try {
+        gaMetricsData = await ga4Service.fetchKeyMetrics(website.gaPropertyId, authClient);
+        console.log('Fetched comprehensive GA4 metrics for AI analysis');
+      } catch (gaError) {
+        console.warn('Could not fetch full GA4 metrics:', gaError);
+        // Continue without the additional metrics data
+      }
+      
+      // Fetch detailed historical data for context
       const historicalData = await ga4Service.fetchHistoricalData(website.gaPropertyId, authClient);
       
-      // Generate insights with OpenAI
+      // Generate insights with OpenAI using enhanced data
       const generatedInsights = await openAiService.generateInsights(
         metrics, 
         historicalData, 
-        website.domain
+        website.domain,
+        gaMetricsData // Pass additional GA4 metrics to OpenAI
       );
 
       // Save the generated insights to the database
@@ -167,20 +178,57 @@ export const insightController = {
         await storage.updateReport(savedReport.id, { status: 'failed' });
         return res.status(404).json({ message: 'No metrics found for this website' });
       }
+      
+      // Get the user for Google auth
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user || !user.refreshToken) {
+        await storage.updateReport(savedReport.id, { status: 'failed' });
+        return res.status(400).json({ message: 'User authentication data is missing' });
+      }
 
-      // Generate the report asynchronously
-      openAiService.generateCustomReport(query, metrics, website.domain)
-        .then(async (reportResponse) => {
+      // Generate the report asynchronously with enhanced data
+      (async () => {
+        try {
+          // Authenticate with Google
+          const authClient = await ga4Service.authenticate(user.refreshToken);
+          
+          // Fetch additional data for improved insights
+          let gaMetricsData = null;
+          let historicalData = null;
+          
+          try {
+            // Fetch comprehensive GA4 metrics for analysis
+            gaMetricsData = await ga4Service.fetchKeyMetrics(website.gaPropertyId, authClient);
+            
+            // Fetch detailed historical data
+            historicalData = await ga4Service.fetchHistoricalData(website.gaPropertyId, authClient);
+            
+            console.log('Fetched comprehensive data for custom report');
+          } catch (dataError) {
+            console.warn('Could not fetch additional data for report:', dataError);
+            // Continue with basic metrics only
+          }
+          
+          // Generate enhanced report with all available data
+          const reportResponse = await openAiService.generateCustomReport(
+            query, 
+            metrics, 
+            website.domain,
+            historicalData,
+            gaMetricsData
+          );
+          
           // Update the report with the response
           await storage.updateReport(savedReport.id, {
             response: reportResponse,
             status: 'completed'
           });
-        })
-        .catch(async (error) => {
+        } catch (error) {
           console.error('Error in async report generation:', error);
           await storage.updateReport(savedReport.id, { status: 'failed' });
-        });
+        }
+      })(); // Immediately invoke the async function
 
       // Return the pending report immediately
       return res.status(202).json({
