@@ -53,6 +53,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post(`${apiPrefix}/auth/callback`, authController.handleAuthCallback); // Keeping POST for backward compatibility
   app.get(`${apiPrefix}/auth/user`, authenticate, authController.getCurrentUser);
   app.post(`${apiPrefix}/auth/logout`, authenticate, authController.logout);
+  
+  // Add route to handle Google's actual redirect URI
+  app.get(`/auth`, authController.handleAuthCallback);
 
   // Websites routes
   app.get(`${apiPrefix}/websites`, authenticate, metricsController.getUserWebsites);
