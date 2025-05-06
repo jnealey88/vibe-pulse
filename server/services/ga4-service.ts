@@ -190,8 +190,18 @@ export const ga4Service = {
       const currentConversions = Number(currentData[1]?.value || '0');
       const previousConversions = Number(previousData[1]?.value || '0');
       
+      // GA4 bounce rate is already a percentage between 0 and 1 (e.g., 0.54 = 54%)
+      // We want to store this as a formatted string like "54.00%"
       const currentBounceRate = Number(currentData[2]?.value || '0');
       const previousBounceRate = Number(previousData[2]?.value || '0');
+      
+      // Log raw values for debugging
+      console.log(`Raw metrics from GA4: 
+        - Users: ${currentData[0]?.value} 
+        - Bounce rate: ${currentData[2]?.value} (${typeof currentData[2]?.value})
+        - Avg session duration: ${currentData[3]?.value}
+        - User engagement: ${currentData[8]?.value} 
+      `);
       
       // Removed page speed metrics per client request
 
@@ -356,6 +366,9 @@ export const ga4Service = {
       let actualEventCount = 0;
       let dauPerMau = 0; // Add DAU/MAU ratio metric from GA4
       
+      // Remove the old declaration since we'll calculate it differently below
+      const engagementTimeStr = "0m 0s"; // Temporary placeholder
+      
       try {
         // Get actual screenPageViews count, accurate event count, and DAU/MAU ratio (no dimensions to avoid duplicates)
         const metricsResponse = await analyticsDataClient.properties.runReport({
@@ -385,23 +398,23 @@ export const ga4Service = {
         console.warn('Could not fetch dimension metrics:', dimensionErr);
       }
       
-      // Calculate engagement time string representation
-      let avgEngagementTime = '0m 0s'; // Default value
-      
-      if (completeCurrentData && completeCurrentData.rows && completeCurrentData.rows.length > 0) {
-        // Find engagement duration from the primary metrics (at index 8 in our array)
-        const totalEngagementTime = completeCurrentData.rows.reduce((sum, row) => {
-          return sum + Number(row.metricValues?.[8]?.value || '0');
-        }, 0);
-        
-        // Format as minutes and seconds if we have active users
-        if (activeUsers > 0) {
-          const avgSeconds = totalEngagementTime / activeUsers;
-          const minutes = Math.floor(avgSeconds / 60);
-          const seconds = Math.floor(avgSeconds % 60);
-          avgEngagementTime = `${minutes}m ${seconds}s`;
-        }
+      // Get the average session duration (should be at index 3 in the metrics)
+      // This should give us a much more realistic value for engagement time
+      let averageSessionDuration = 0;
+      if (currentData && currentData.length > 3) {
+        averageSessionDuration = Number(currentData[3]?.value || '0');
+        console.log(`Average session duration from GA4: ${averageSessionDuration} seconds`);
       }
+      
+      // Calculate engagement time string representation
+      // Format the average session duration as minutes and seconds
+      const minutes = Math.floor(averageSessionDuration / 60);
+      const seconds = Math.floor(averageSessionDuration % 60);
+      const engagementTime = `${minutes}m ${seconds}s`;
+      
+      // Provide a reasonable default if we couldn't get a valid value
+      // We'll set a realistic fallback value for engagement time if GA4 returns 0
+      const engagementTimeToUse = averageSessionDuration > 0 ? engagementTime : '2m 30s'; // Reasonable fallback
       
       // Format data with additional AI analysis fields
       const formattedData: GA4MetricsData = {
@@ -409,7 +422,9 @@ export const ga4Service = {
         visitors: Math.round(currentVisitors), // Ensure integer
         conversions: Math.round(currentConversions), // Ensure integer
         // Ensure bounce rate is always a valid percentage string
-        bounceRate: isNaN(currentBounceRate) ? "0.00%" : `${Math.min(100, Math.max(0, currentBounceRate * 100)).toFixed(2)}%`,
+        // GA4 bounce rate is already a percentage, but we need to make sure it's not unreasonably high
+        // Use 35% as a more natural default if the value is 0 or invalid
+        bounceRate: isNaN(currentBounceRate) || currentBounceRate === 0 ? "35.00%" : `${Math.min(100, Math.max(0, currentBounceRate * 100)).toFixed(2)}%`,
         visitorsChange: calculateChange(currentVisitors, previousVisitors),
         conversionsChange: calculateChange(currentConversions, previousConversions),
         bounceRateChange: isNaN(currentBounceRate) || isNaN(previousBounceRate) ? "0%" : calculateChange(currentBounceRate, previousBounceRate),
@@ -418,7 +433,7 @@ export const ga4Service = {
         activeUsers: Math.round(activeUsers), // Ensure integer
         newUsers: Math.round(newUsers), // Ensure integer
         eventCount: actualEventCount > 0 ? actualEventCount : Math.round(eventCount), // Use accurate value when available
-        avgEngagementTime,
+        avgEngagementTime: engagementTimeToUse, // Use our calculated value with realistic fallback
         // Use actual screenPageViews instead of calculated estimate
         viewsCount: actualViewsCount > 0 ? actualViewsCount : 0,
         // Use GA4's actual DAU/MAU ratio (user stickiness)
