@@ -287,8 +287,8 @@ export const ga4Service = {
       // Format data with additional AI analysis fields
       const formattedData: GA4MetricsData = {
         // Core metrics for UI display
-        visitors: currentVisitors,
-        conversions: currentConversions,
+        visitors: Math.round(currentVisitors), // Ensure integer
+        conversions: Math.round(currentConversions), // Ensure integer
         bounceRate: `${currentBounceRate.toFixed(1)}%`,
         pageSpeed: `${currentPageSpeed.toFixed(1)}s`,
         visitorsChange: calculateChange(currentVisitors, previousVisitors),
@@ -297,11 +297,11 @@ export const ga4Service = {
         pageSpeedChange: calculateChange(currentPageSpeed, previousPageSpeed),
         
         // Additional metrics for dashboard display
-        activeUsers,
-        newUsers,
-        eventCount,
+        activeUsers: Math.round(activeUsers), // Ensure integer
+        newUsers: Math.round(newUsers), // Ensure integer
+        eventCount: Math.round(eventCount), // Ensure integer
         avgEngagementTime,
-        viewsCount: Math.round(currentVisitors * 3.2), // Estimate based on users
+        viewsCount: Math.round(currentVisitors * 3.2), // Estimate based on users, ensure integer
         sessionsByChannel,
         sessionsBySource,
         viewsByPage,
@@ -518,8 +518,8 @@ export const ga4Service = {
       date: new Date(),
       
       // Core metrics
-      visitors: metricsData.visitors,
-      conversions: metricsData.conversions,
+      visitors: Math.round(metricsData.visitors), // Ensure integer
+      conversions: Math.round(metricsData.conversions), // Ensure integer
       bounceRate: metricsData.bounceRate,
       pageSpeed: metricsData.pageSpeed,
       visitorsChange: metricsData.visitorsChange,
@@ -527,12 +527,12 @@ export const ga4Service = {
       bounceRateChange: metricsData.bounceRateChange,
       pageSpeedChange: metricsData.pageSpeedChange,
       
-      // Additional metrics - use defaults if not available
-      activeUsers: activeUsers || 0,
-      newUsers: newUsers || 0,
-      eventCount: eventCount || 0,
+      // Additional metrics - use defaults if not available and ensure integers
+      activeUsers: Math.round(activeUsers || 0),
+      newUsers: Math.round(newUsers || 0),
+      eventCount: Math.round(eventCount || 0),
       avgEngagementTime: avgEngagementTime || '0s',
-      viewsCount: viewsCount || 0,
+      viewsCount: Math.round(viewsCount || 0),
       sessionsByChannel: sessionsByChannel || {},
       sessionsBySource: sessionsBySource || {},
       viewsByPage: viewsByPage || {},
