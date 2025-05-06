@@ -424,46 +424,47 @@ export const ga4Service = {
           actualEventCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[1]?.value || '0'));
         }
         
-        // Get the DAU/MAU ratio from secondary metrics response, if available
-        // The dauPerMau metric is at index 3 in our secondaryMetrics array
+        // IMPORTANT: Instead of relying on GA4's dauPerMau value, which is returning unusually high values,
+        // we'll calculate DAU/MAU manually based on activeUsers (DAU) and totalUsers (MAU)
+        
+        console.log('Calculating DAU/MAU ratio using our own formula instead of GA4 metric...');
+        
+        // Use activeUsers (this is our DAU - Daily Active Users)
+        // And use totalUsers (this is our MAU - Monthly Active Users over last 30 days)
+        if (activeUsers > 0) {
+          const currentVisitors = Number(currentData[0]?.value || '0');
+          
+          if (currentVisitors > 0) {
+            // FORCED manual calculation - ignore GA4's dauPerMau value entirely
+            const calculatedDauMau = activeUsers / currentVisitors;
+            
+            // Apply a reasonable cap - DAU/MAU is typically between 0.1 (10%) and 0.4 (40%)
+            // For very sticky products like social networks, 0.5 (50%) might be achievable
+            // But values close to 1.0 (100%) are almost always measurement errors
+            dauPerMau = Math.min(calculatedDauMau, 0.4); // Cap at 40% as a reasonable maximum
+            
+            console.log(`Calculated DAU/MAU: ${calculatedDauMau.toFixed(4)} (uncapped)`);
+            console.log(`Final DAU/MAU: ${dauPerMau.toFixed(4)} (after applying cap)`);
+            console.log(`Active users: ${activeUsers}, Total monthly users: ${currentVisitors}`);
+            
+          } else {
+            console.warn('Cannot calculate DAU/MAU - monthly active users count is zero');
+            dauPerMau = 0.1; // Use a reasonable default (10%)
+          }
+        } else {
+          console.warn('Cannot calculate DAU/MAU - daily active users count is zero');
+          dauPerMau = 0.1; // Use a reasonable default (10%)
+        }
+        
+        // Log metrics
+        console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU value: ${dauPerMau}, formatted: ${(dauPerMau * 100).toFixed(1)}%`);
+        
+        // We'll still access GA4's dauPerMau, but only for debugging purposes
         if (currentSecondaryData && currentSecondaryData.rows && currentSecondaryData.rows.length > 0 &&
             currentSecondaryData.rows[0].metricValues && currentSecondaryData.rows[0].metricValues.length > 3) {
-            
-          // GA4 returns dauPerMau as a decimal between 0 and 1 (e.g., 0.113 for 11.3%)
+          
           const rawDauPerMau = currentSecondaryData.rows[0].metricValues[3].value || '0';
-          let parsedDauPerMau = Number(rawDauPerMau);
-          
-          // Deal with unrealistically high values (typically shouldn't be above 0.5 or 50%)
-          // This is a fallback for when GA4 reports unrealistic values
-          if (parsedDauPerMau > 0.5) {
-            console.warn(`Unusually high DAU/MAU value from GA4: ${parsedDauPerMau}. This may indicate a data collection issue.`);
-            
-            // If the value is suspiciously high (over 0.5 or 50%), we'll calculate it ourselves
-            // This is because DAU/MAU ratio is rarely above 50% for most websites
-            if (activeUsers > 0) {
-              // Calculate it based on the activeUsers (DAU) and totalUsers (MAU) we already have
-              const currentVisitors = Number(currentData[0]?.value || '0');
-              if (currentVisitors > 0) {
-                parsedDauPerMau = activeUsers / currentVisitors;
-                console.log(`Calculated alternative DAU/MAU: ${parsedDauPerMau} (active users: ${activeUsers}, total users: ${currentVisitors})`);
-              }
-            }
-          }
-          
-          // Assign the final value, with a reasonable cap
-          dauPerMau = Math.min(parsedDauPerMau, 0.4); // Cap at 40% as a reasonable maximum
-          
-          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU raw value: ${rawDauPerMau}, adjusted value: ${dauPerMau}, formatted: ${(dauPerMau * 100).toFixed(1)}%`);
-        } else {
-          console.warn('DAU/MAU data not available from GA4 secondary metrics. Using calculated fallback.');
-          // Calculate a fallback value if GA4's dauPerMau is not available
-          if (activeUsers > 0) {
-            const currentVisitors = Number(currentData[0]?.value || '0');
-            if (currentVisitors > 0) {
-              dauPerMau = Math.min(activeUsers / currentVisitors, 0.4); // Cap at 40%
-              console.log(`Calculated fallback DAU/MAU: ${dauPerMau} (active users: ${activeUsers}, total users: ${currentVisitors})`);
-            }
-          }
+          console.log(`GA4's original dauPerMau value (ignored): ${rawDauPerMau}`);
         }
         
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
