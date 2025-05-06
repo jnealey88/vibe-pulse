@@ -193,8 +193,7 @@ export const ga4Service = {
       const currentBounceRate = Number(currentData[2]?.value || '0');
       const previousBounceRate = Number(previousData[2]?.value || '0');
       
-      const currentPageSpeed = Number(currentData[3]?.value || '0');
-      const previousPageSpeed = Number(previousData[3]?.value || '0');
+      // Removed page speed metrics per client request
 
       // Process device and platform breakdown data for AI analysis
       const deviceBreakdown: Record<string, number> = {};
