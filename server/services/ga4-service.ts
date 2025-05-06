@@ -374,8 +374,10 @@ export const ga4Service = {
         if (metricsResponse.data && metricsResponse.data.rows && metricsResponse.data.rows.length > 0) {
           actualViewsCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[0]?.value || '0'));
           actualEventCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[1]?.value || '0'));
-          dauPerMau = Number(metricsResponse.data.rows[0].metricValues?.[2]?.value || '0');
-          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU: ${(dauPerMau * 100).toFixed(1)}%`);
+          // GA4 returns dauPerMau as a decimal between 0 and 1 (e.g., 0.113 for 11.3%)
+          const rawDauPerMau = metricsResponse.data.rows[0].metricValues?.[2]?.value || '0';
+          dauPerMau = Number(rawDauPerMau);
+          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU raw value: ${rawDauPerMau}, formatted: ${(dauPerMau * 100).toFixed(1)}%`);
         }
         
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
@@ -419,6 +421,7 @@ export const ga4Service = {
         // Use actual screenPageViews instead of calculated estimate
         viewsCount: actualViewsCount > 0 ? actualViewsCount : 0,
         // Use GA4's actual DAU/MAU ratio (user stickiness)
+        // dauPerMau is already a decimal between 0 and 1, so format correctly
         userStickiness: dauPerMau > 0 ? `${(dauPerMau * 100).toFixed(1)}%` : undefined,
         sessionsByChannel,
         sessionsBySource,

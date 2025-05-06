@@ -113,10 +113,10 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     })) :
     [];
     
-  // Calculate user stickiness (DAU/MAU ratio) if we have data
-  // DAU/MAU ratio is actually a direct ratio between active users and total users
-  const userStickiness = metrics.activeUsers && metrics.visitors && metrics.visitors > 0 ? 
-    Math.round((metrics.activeUsers / metrics.visitors) * 100) : 
+  // Use the DAU/MAU ratio (user stickiness) directly from the API
+  // This value comes from GA4's 'dauPerMau' metric
+  const userStickiness = metrics.userStickiness ? 
+    metrics.userStickiness.replace('%', '') : // Remove % sign to display it with our format
     null;
 
   return (
@@ -155,7 +155,7 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
                 <div className="flex flex-col">
                   <span className="text-3xl font-medium font-google-sans">{userStickiness}%</span>
                   <span className="text-sm text-muted-foreground">
-                    {userStickiness && (userStickiness < 20 ? 'Low' : userStickiness < 50 ? 'Average' : 'High')} user engagement
+                    {userStickiness && (parseFloat(userStickiness) < 20 ? 'Low' : parseFloat(userStickiness) < 50 ? 'Average' : 'High')} user engagement
                   </span>
                 </div>
               </CardContent>
