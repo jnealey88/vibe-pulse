@@ -51,37 +51,37 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
   const additionalMetricCards = [
     {
       label: "Active Users",
-      value: metrics.activeUsers ? metrics.activeUsers.toLocaleString() : "0",
+      value: metrics.activeUsers ? metrics.activeUsers.toLocaleString() : "-",
       icon: "group",
       iconColor: "text-blue-500",
     },
     {
       label: "New Users",
-      value: metrics.newUsers ? metrics.newUsers.toLocaleString() : "0",
+      value: metrics.newUsers ? metrics.newUsers.toLocaleString() : "-",
       icon: "person_add",
       iconColor: "text-green-500",
     },
     {
       label: "Bounce Rate",
-      value: metrics.bounceRate || "43.59%", // Use actual GA4 value as reported by user
+      value: metrics.bounceRate || "-", 
       icon: "sync_problem",
       iconColor: "text-amber-500",
     },
     {
       label: "Event Count",
-      value: metrics.eventCount ? metrics.eventCount.toLocaleString() : "0",
+      value: metrics.eventCount ? metrics.eventCount.toLocaleString() : "-",
       icon: "touch_app",
       iconColor: "text-purple-500",
     },
     {
       label: "Avg. Engagement",
-      value: metrics.avgEngagementTime || "0s",
+      value: metrics.avgEngagementTime || "-",
       icon: "timer",
       iconColor: "text-orange-500",
     },
     {
       label: "Views",
-      value: metrics.viewsCount ? metrics.viewsCount.toLocaleString() : "0",
+      value: metrics.viewsCount ? metrics.viewsCount.toLocaleString() : "-",
       icon: "visibility",
       iconColor: "text-cyan-500",
     },
@@ -90,67 +90,22 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
   // Prepare data for distribution charts
   
   // 1. Sessions by Channel
-  let sessionsByChannelData = metrics.sessionsByChannel ? 
+  const sessionsByChannelData = metrics.sessionsByChannel ? 
     Object.entries(metrics.sessionsByChannel).map(([name, value]) => ({ name, value })) : 
     [];
   
-  // If no data, create realistic sample data based on total visitors
-  if (sessionsByChannelData.length === 0 && metrics.visitors) {
-    const totalVisitors = metrics.visitors;
-    sessionsByChannelData = [
-      { name: 'organic', value: Math.round(totalVisitors * 0.45) },
-      { name: 'direct', value: Math.round(totalVisitors * 0.25) },
-      { name: 'referral', value: Math.round(totalVisitors * 0.15) },
-      { name: 'social', value: Math.round(totalVisitors * 0.1) },
-      { name: 'email', value: Math.round(totalVisitors * 0.05) }
-    ];
-  }
-  
   // 2. Sessions by Source
-  let sessionsBySourceData = metrics.sessionsBySource ? 
+  const sessionsBySourceData = metrics.sessionsBySource ? 
     Object.entries(metrics.sessionsBySource).map(([name, value]) => ({ name, value })) : 
     [];
   
-  // If no data, create realistic sample data based on total visitors
-  if (sessionsBySourceData.length === 0 && metrics.visitors) {
-    const totalVisitors = metrics.visitors;
-    sessionsBySourceData = [
-      { name: 'google', value: Math.round(totalVisitors * 0.4) },
-      { name: 'direct', value: Math.round(totalVisitors * 0.25) },
-      { name: 'facebook.com', value: Math.round(totalVisitors * 0.12) },
-      { name: 'twitter.com', value: Math.round(totalVisitors * 0.08) },
-      { name: 'linkedin.com', value: Math.round(totalVisitors * 0.05) },
-      { name: 'bing', value: Math.round(totalVisitors * 0.04) },
-      { name: 'newsletter', value: Math.round(totalVisitors * 0.03) },
-      { name: 'other', value: Math.round(totalVisitors * 0.03) }
-    ];
-  }
-  
   // 3. Views by Page
-  let viewsByPageData = metrics.viewsByPage ?
+  const viewsByPageData = metrics.viewsByPage ?
     Object.entries(metrics.viewsByPage).map(([name, value]) => ({ name, value })) :
     [];
   
-  // If no data, create realistic sample data based on total views
-  if (viewsByPageData.length === 0 && metrics.viewsCount) {
-    const totalViews = metrics.viewsCount;
-    viewsByPageData = [
-      { name: 'Home Page', value: Math.round(totalViews * 0.35) },
-      { name: 'About Us', value: Math.round(totalViews * 0.15) },
-      { name: 'Products', value: Math.round(totalViews * 0.12) },
-      { name: 'Blog Post: "Top 10 Tips"', value: Math.round(totalViews * 0.08) },
-      { name: 'Contact', value: Math.round(totalViews * 0.07) },
-      { name: 'FAQ', value: Math.round(totalViews * 0.06) },
-      { name: 'Blog Post: "Getting Started"', value: Math.round(totalViews * 0.05) },
-      { name: 'Product: Premium', value: Math.round(totalViews * 0.04) },
-      { name: 'Pricing', value: Math.round(totalViews * 0.04) },
-      { name: 'Terms of Service', value: Math.round(totalViews * 0.02) },
-      { name: 'Privacy Policy', value: Math.round(totalViews * 0.02) }
-    ];
-  }
-  
   // 4. Users by Country
-  let usersByCountryData = metrics.usersByCountry ?
+  const usersByCountryData = metrics.usersByCountry ?
     Object.entries(metrics.usersByCountry).map(([code, value]) => ({ 
       code, 
       name: getCountryName(code), 
@@ -158,27 +113,10 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     })) :
     [];
     
-  // If no data, create realistic sample data based on total visitors
-  if (usersByCountryData.length === 0 && metrics.visitors) {
-    const totalVisitors = metrics.visitors;
-    usersByCountryData = [
-      { code: 'US', name: 'United States', value: Math.round(totalVisitors * 0.45) },
-      { code: 'GB', name: 'United Kingdom', value: Math.round(totalVisitors * 0.12) },
-      { code: 'CA', name: 'Canada', value: Math.round(totalVisitors * 0.08) },
-      { code: 'AU', name: 'Australia', value: Math.round(totalVisitors * 0.07) },
-      { code: 'DE', name: 'Germany', value: Math.round(totalVisitors * 0.06) },
-      { code: 'FR', name: 'France', value: Math.round(totalVisitors * 0.05) },
-      { code: 'IN', name: 'India', value: Math.round(totalVisitors * 0.05) },
-      { code: 'JP', name: 'Japan', value: Math.round(totalVisitors * 0.04) },
-      { code: 'BR', name: 'Brazil', value: Math.round(totalVisitors * 0.04) },
-      { code: 'MX', name: 'Mexico', value: Math.round(totalVisitors * 0.04) }
-    ];
-  }
-    
-  // Calculate user stickiness (DAU/MAU ratio) - adjust ratio to be more realistic
+  // Calculate user stickiness (DAU/MAU ratio) if we have data
   const userStickiness = metrics.activeUsers && metrics.visitors ? 
     Math.min(75, Math.max(15, Math.round((metrics.activeUsers / (metrics.visitors * 3)) * 100))) : 
-    25; // Default to 25% if no data
+    null;
 
   return (
     <div className="space-y-8">
@@ -202,26 +140,28 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
         </div>
       </div>
       
-      {/* User Stickiness Card */}
-      <div>
-        <h3 className="text-xl font-medium font-google-sans mb-4">User Stickiness</h3>
-        <div className="grid grid-cols-1 gap-6">
-          <Card className="border border-border shadow-sm">
-            <CardContent className="pt-5">
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-muted-foreground font-google-sans">DAU/MAU Ratio</span>
-                <span className="material-icons text-blue-500">loyalty</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-3xl font-medium font-google-sans">{userStickiness}%</span>
-                <span className="text-sm text-muted-foreground">
-                  {userStickiness < 20 ? 'Low' : userStickiness < 50 ? 'Average' : 'High'} user engagement
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+      {/* User Stickiness Card - only shown when data is available */}
+      {userStickiness !== null && (
+        <div>
+          <h3 className="text-xl font-medium font-google-sans mb-4">User Stickiness</h3>
+          <div className="grid grid-cols-1 gap-6">
+            <Card className="border border-border shadow-sm">
+              <CardContent className="pt-5">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-muted-foreground font-google-sans">DAU/MAU Ratio</span>
+                  <span className="material-icons text-blue-500">loyalty</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-3xl font-medium font-google-sans">{userStickiness}%</span>
+                  <span className="text-sm text-muted-foreground">
+                    {userStickiness && (userStickiness < 20 ? 'Low' : userStickiness < 50 ? 'Average' : 'High')} user engagement
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Traffic Sources Section */}
       <div>
