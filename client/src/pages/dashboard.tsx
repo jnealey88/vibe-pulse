@@ -42,9 +42,9 @@ const Dashboard = () => {
 
   // Fetch user's websites
   const {
-    data: websites = [],
+    data: websites = [] as Website[],
     isLoading: isLoadingWebsites,
-  } = useQuery({
+  } = useQuery<Website[]>({
     queryKey: ['/api/websites'],
     enabled: isAuthenticated,
   });
@@ -61,17 +61,17 @@ const Dashboard = () => {
     data: metrics,
     isLoading: isLoadingMetrics,
     refetch: refetchMetrics,
-  } = useQuery({
+  } = useQuery<any>({
     queryKey: ['/api/websites', selectedWebsiteId, 'metrics'],
     enabled: !!selectedWebsiteId,
   });
 
   // Fetch insights for selected website
   const {
-    data: insights = [],
+    data: insights = [] as any[],
     isLoading: isLoadingInsights,
     refetch: refetchInsights,
-  } = useQuery({
+  } = useQuery<any[]>({
     queryKey: ['/api/websites', selectedWebsiteId, 'insights', filters.category, filters.impact],
     enabled: !!selectedWebsiteId,
   });
@@ -330,6 +330,12 @@ const Dashboard = () => {
           
           {/* Generate Report */}
           <GenerateReport websiteId={selectedWebsiteId ? parseInt(selectedWebsiteId) : null} />
+          
+          {/* Add Website Modal */}
+          <AddWebsiteModal 
+            isOpen={isAddWebsiteModalOpen} 
+            onClose={() => setIsAddWebsiteModalOpen(false)} 
+          />
         </main>
       </div>
     </div>
