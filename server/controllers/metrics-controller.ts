@@ -3,6 +3,34 @@ import { storage } from '../storage';
 import ga4Service from '../services/ga4-service';
 
 export const metricsController = {
+  // Get available GA4 properties for the current user
+  getAvailableGa4Properties: async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      // Get the user for Google auth
+      const user = await storage.getUserById(userId);
+      
+      if (!user || !user.refreshToken) {
+        return res.status(400).json({ message: 'User authentication data is missing' });
+      }
+
+      // Authenticate with Google
+      const authClient = await ga4Service.authenticate(user.refreshToken);
+      
+      // Fetch available GA4 properties
+      const properties = await ga4Service.fetchAvailableProperties(authClient);
+      
+      return res.json(properties);
+    } catch (error: any) {
+      console.error('Error fetching GA4 properties:', error);
+      return res.status(500).json({ message: `Failed to fetch GA4 properties: ${error.message}` });
+    }
+  },
   // Get the latest metrics for a website
   getLatestMetrics: async (req: Request, res: Response) => {
     try {
@@ -77,7 +105,7 @@ export const metricsController = {
       const savedMetrics = await storage.insertMetrics(formattedMetrics);
 
       return res.json(savedMetrics);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error syncing metrics:', error);
       return res.status(500).json({ message: `Failed to sync metrics: ${error.message}` });
     }

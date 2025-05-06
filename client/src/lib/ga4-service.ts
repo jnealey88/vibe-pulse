@@ -66,6 +66,16 @@ export const ga4Service = {
   addWebsite: async (name: string, domain: string, gaPropertyId: string): Promise<Website> => {
     const response = await apiRequest('POST', '/api/websites', { name, domain, gaPropertyId });
     return response.json();
+  },
+  
+  getAvailableGa4Properties: async (): Promise<Array<{
+    accountName: string;
+    propertyName: string;
+    propertyId: string;
+    domain: string;
+  }>> => {
+    const response = await apiRequest('GET', '/api/ga4-properties');
+    return response.json();
   }
 };
 

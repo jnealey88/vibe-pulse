@@ -30,9 +30,9 @@ export const ga4Service = {
       });
 
       return oauth2Client;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error authenticating with Google:', error);
-      throw new Error(`Failed to authenticate with Google: ${error.message}`);
+      throw new Error(`Failed to authenticate with Google: ${error.message || 'Unknown error'}`);
     }
   },
 
@@ -105,9 +105,9 @@ export const ga4Service = {
       };
 
       return formattedData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching GA4 metrics:', error);
-      throw new Error(`Failed to fetch metrics from Google Analytics: ${error.message}`);
+      throw new Error(`Failed to fetch metrics from Google Analytics: ${error.message || 'Unknown error'}`);
     }
   },
 
@@ -168,7 +168,12 @@ export const ga4Service = {
         auth: authClient
       });
       
-      const properties = [];
+      const properties: Array<{
+        accountName: string;
+        propertyName: string;
+        propertyId: string;
+        domain: string;
+      }> = [];
       
       // For each account, get the properties
       if (accountsResponse.data.accounts && accountsResponse.data.accounts.length > 0) {
@@ -187,28 +192,29 @@ export const ga4Service = {
               
               // Get the website details
               let domain = '';
-              if (property.dataStreams) {
-                for (const stream of property.dataStreams) {
-                  if (stream.webStreamData && stream.webStreamData.defaultUri) {
-                    domain = stream.webStreamData.defaultUri;
-                    break;
-                  }
-                }
-              } else {
-                // If dataStreams is not directly available, fetch them
-                const streamsResponse = await analyticsAdminClient.properties.dataStreams.list({
-                  auth: authClient,
-                  parent: property.name
-                });
-                
-                if (streamsResponse.data.dataStreams && streamsResponse.data.dataStreams.length > 0) {
-                  for (const stream of streamsResponse.data.dataStreams) {
-                    if (stream.webStreamData && stream.webStreamData.defaultUri) {
-                      domain = stream.webStreamData.defaultUri;
-                      break;
+              
+              try {
+                // Fetch data streams for this property
+                if (property.name) {
+                  const streamsResponse = await analyticsAdminClient.properties.dataStreams.list({
+                    auth: authClient,
+                    parent: property.name
+                  });
+                  
+                  if (streamsResponse && streamsResponse.data && 
+                      streamsResponse.data.dataStreams && 
+                      streamsResponse.data.dataStreams.length > 0) {
+                    for (const stream of streamsResponse.data.dataStreams) {
+                      if (stream.webStreamData && stream.webStreamData.defaultUri) {
+                        domain = stream.webStreamData.defaultUri;
+                        break;
+                      }
                     }
                   }
                 }
+              } catch (streamError) {
+                console.warn(`Could not fetch streams for property ${propertyId}:`, streamError);
+                // Continue without stream data
               }
               
               // Clean up the domain
