@@ -81,7 +81,8 @@ const Dashboard = () => {
   const syncMetricsMutation = useMutation({
     mutationFn: async () => {
       if (!selectedWebsiteId) return null;
-      return await ga4Service.syncMetrics(parseInt(selectedWebsiteId));
+      const days = parseInt(dateRange);
+      return await ga4Service.syncMetrics(parseInt(selectedWebsiteId), days);
     },
     onSuccess: () => {
       toast({

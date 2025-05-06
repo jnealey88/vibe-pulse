@@ -13,8 +13,8 @@ export const ga4Service = {
     return response.json();
   },
 
-  syncMetrics: async (websiteId: number): Promise<Metric> => {
-    const response = await apiRequest('POST', `/api/websites/${websiteId}/metrics/sync`);
+  syncMetrics: async (websiteId: number, days: number = 30): Promise<Metric> => {
+    const response = await apiRequest('POST', `/api/websites/${websiteId}/metrics/sync?days=${days}`);
     return response.json();
   },
 

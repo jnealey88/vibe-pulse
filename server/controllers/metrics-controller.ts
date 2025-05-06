@@ -104,8 +104,9 @@ export const metricsController = {
       // Authenticate with Google
       const authClient = await ga4Service.authenticate(user.refreshToken);
       
-      // Fetch metrics from GA4
-      const metricsData = await ga4Service.fetchKeyMetrics(website.gaPropertyId, authClient);
+      // Fetch metrics from GA4 using the valid days parameter
+      console.log(`Fetching GA4 metrics with days parameter: ${validDays}`);
+      const metricsData = await ga4Service.fetchKeyMetrics(website.gaPropertyId, authClient, validDays);
       
       // Format and store metrics
       const formattedMetrics = ga4Service.formatMetricsForStorage(metricsData, parsedWebsiteId);
