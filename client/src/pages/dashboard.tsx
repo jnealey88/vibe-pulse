@@ -236,7 +236,7 @@ const Dashboard = () => {
           />
           
           {/* AI Insights */}
-          <div className="mb-6">
+          <div className="mt-8 mb-6">
             <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
               <div className="flex items-center justify-between w-full md:w-auto">
                 <h3 className="text-xl font-semibold font-google-sans text-foreground">Smart Insights</h3>
