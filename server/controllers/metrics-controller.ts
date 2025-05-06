@@ -183,12 +183,22 @@ export const metricsController = {
         return res.status(403).json({ message: 'Not authorized to delete this website' });
       }
       
-      await storage.deleteWebsite(websiteId);
+      const deletedWebsite = await storage.deleteWebsite(websiteId);
       
-      return res.status(200).json({ message: 'Website deleted successfully' });
+      // Make sure to set the correct content type and return a properly formatted JSON response
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(200).json({ 
+        message: 'Website deleted successfully',
+        websiteId,
+        deleted: !!deletedWebsite
+      });
     } catch (error: any) {
       console.error('Error deleting website:', error);
-      return res.status(500).json({ message: `Failed to delete website: ${error.message || 'Unknown error'}` });
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).json({ 
+        message: `Failed to delete website: ${error.message || 'Unknown error'}`,
+        error: true 
+      });
     }
   }
 };

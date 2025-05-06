@@ -1,4 +1,4 @@
-import { db } from "@db";
+import { db, pool } from "@db";
 import * as schema from "@shared/schema";
 import { eq, and, desc, asc, like, sql } from "drizzle-orm";
 
@@ -92,31 +92,43 @@ export const storage = {
       offset?: number;
     }
   ) => {
-    let conditions = eq(schema.insights.websiteId, websiteId);
-    
-    if (options?.category && options.category !== "All Categories") {
-      conditions = and(conditions, eq(schema.insights.category, options.category));
+    try {
+      let query = db.select().from(schema.insights);
+      
+      // Build base condition
+      const conditions = [eq(schema.insights.websiteId, websiteId)];
+      
+      // Add optional filters
+      if (options?.category && options.category !== "All Categories") {
+        conditions.push(eq(schema.insights.category, options.category));
+      }
+      
+      if (options?.impact && options.impact !== "All Impacts") {
+        conditions.push(eq(schema.insights.impact, options.impact));
+      }
+      
+      // Apply all conditions with AND logic
+      const finalCondition = conditions.reduce((prev, curr) => 
+        prev ? and(prev, curr) : curr
+      );
+      
+      if (finalCondition) {
+        query = query.where(finalCondition);
+      }
+      
+      // Add ordering
+      query = query.orderBy(desc(schema.insights.detectedAt));
+      
+      // Add pagination
+      const limit = options?.limit ?? 100;
+      const offset = options?.offset ?? 0;
+      
+      const result = await query.limit(limit).offset(offset);
+      return result;
+    } catch (error) {
+      console.error('Error fetching insights:', error);
+      return []; // Return empty array on error
     }
-    
-    if (options?.impact && options.impact !== "All Impacts") {
-      conditions = and(conditions, eq(schema.insights.impact, options.impact));
-    }
-    
-    const query = db
-      .select()
-      .from(schema.insights)
-      .where(conditions)
-      .orderBy(desc(schema.insights.detectedAt));
-    
-    if (options?.limit) {
-      query.limit(options.limit);
-    }
-    
-    if (options?.offset) {
-      query.offset(options.offset);
-    }
-    
-    return await query;
   },
 
   getInsightById: async (id: number) => {

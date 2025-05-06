@@ -70,7 +70,18 @@ export const ga4Service = {
   
   deleteWebsite: async (websiteId: number): Promise<{message: string}> => {
     const response = await apiRequest('DELETE', `/api/websites/${websiteId}`);
-    return response.json();
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return response.json();
+      } else {
+        const text = await response.text();
+        return { message: text || 'Website deleted successfully' };
+      }
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      return { message: 'Website deleted, but response parsing failed' };
+    }
   },
   
   getAvailableGa4Properties: async (): Promise<Array<{
