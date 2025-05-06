@@ -1,13 +1,24 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Website } from "@/types/metric";
+import ga4Service from "@/lib/ga4-service";
+import { Loader2 } from "lucide-react";
+
+// Type for GA4 properties
+interface GA4Property {
+  accountName: string;
+  propertyName: string;
+  propertyId: string;
+  domain: string;
+}
 
 // Validation schema
 const websiteSchema = z.object({
@@ -30,8 +41,22 @@ const AddWebsiteModal = ({ isOpen, onClose }: AddWebsiteModalProps) => {
     gaPropertyId: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof WebsiteFormData, string>>>({});
+  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Fetch GA4 properties when modal is opened
+  const {
+    data: ga4Properties = [],
+    isLoading: isLoadingProperties,
+    isError: isErrorProperties,
+    error: propertiesError
+  } = useQuery<GA4Property[]>({
+    queryKey: ['/api/ga4-properties'],
+    queryFn: ga4Service.getAvailableGa4Properties,
+    enabled: isOpen,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const addWebsiteMutation = useMutation<Website, Error, WebsiteFormData>({
     mutationFn: async (data) => {
@@ -56,6 +81,29 @@ const AddWebsiteModal = ({ isOpen, onClose }: AddWebsiteModalProps) => {
     },
   });
 
+  // When a property is selected, update the form
+  useEffect(() => {
+    if (selectedProperty) {
+      const property = ga4Properties.find(prop => prop.propertyId === selectedProperty);
+      if (property) {
+        setFormData(prev => ({
+          ...prev,
+          name: prev.name || property.propertyName,
+          domain: prev.domain || property.domain,
+          gaPropertyId: property.propertyId
+        }));
+        
+        // Clear errors for fields that are now filled
+        setErrors(prev => ({
+          ...prev,
+          name: undefined,
+          domain: undefined,
+          gaPropertyId: undefined
+        }));
+      }
+    }
+  }, [selectedProperty, ga4Properties]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -63,6 +111,10 @@ const AddWebsiteModal = ({ isOpen, onClose }: AddWebsiteModalProps) => {
     if (errors[name as keyof WebsiteFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+  };
+  
+  const handlePropertyChange = (value: string) => {
+    setSelectedProperty(value);
   };
 
   const validateForm = (): boolean => {
@@ -97,6 +149,7 @@ const AddWebsiteModal = ({ isOpen, onClose }: AddWebsiteModalProps) => {
       gaPropertyId: "",
     });
     setErrors({});
+    setSelectedProperty(null);
   };
 
   return (
@@ -110,6 +163,41 @@ const AddWebsiteModal = ({ isOpen, onClose }: AddWebsiteModalProps) => {
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 py-4">
+            {/* GA4 Properties Dropdown */}
+            <div className="grid gap-2">
+              <Label htmlFor="ga4Property">Select Google Analytics 4 Property</Label>
+              {isLoadingProperties ? (
+                <div className="flex items-center space-x-2 h-9 px-3 py-2 border rounded-md">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">Loading properties...</span>
+                </div>
+              ) : isErrorProperties ? (
+                <div className="text-red-500 text-sm p-2 border border-red-300 rounded-md bg-red-50">
+                  Error loading GA4 properties: {propertiesError?.message || "Please try again"}
+                </div>
+              ) : ga4Properties.length === 0 ? (
+                <div className="text-amber-500 text-sm p-2 border border-amber-300 rounded-md bg-amber-50">
+                  No GA4 properties found. Make sure you have granted access to Google Analytics.
+                </div>
+              ) : (
+                <Select value={selectedProperty || ""} onValueChange={handlePropertyChange}>
+                  <SelectTrigger id="ga4Property" className={errors.gaPropertyId ? "border-red-500" : ""}>
+                    <SelectValue placeholder="Select a GA4 property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ga4Properties.map((property) => (
+                      <SelectItem key={property.propertyId} value={property.propertyId}>
+                        {property.propertyName} ({property.accountName}) - {property.domain}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Choose from your available GA4 properties. This will automatically fill in the details below.
+              </p>
+            </div>
+            
             <div className="grid gap-2">
               <Label htmlFor="name">Website Name</Label>
               <Input
@@ -143,10 +231,11 @@ const AddWebsiteModal = ({ isOpen, onClose }: AddWebsiteModalProps) => {
                 onChange={handleChange}
                 placeholder="G-XXXXXXXXXX"
                 className={errors.gaPropertyId ? "border-red-500" : ""}
+                readOnly={!!selectedProperty}
               />
               {errors.gaPropertyId && <p className="text-red-500 text-sm">{errors.gaPropertyId}</p>}
               <p className="text-xs text-muted-foreground">
-                You can find your GA4 property ID in your Google Analytics account under Admin &gt; Property Settings.
+                This ID uniquely identifies your GA4 property and is used to fetch analytics data.
               </p>
             </div>
           </div>

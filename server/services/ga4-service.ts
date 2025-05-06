@@ -138,9 +138,9 @@ export const ga4Service = {
       })) || [];
 
       return formattedData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching historical GA4 data:', error);
-      throw new Error(`Failed to fetch historical data from Google Analytics: ${error.message}`);
+      throw new Error(`Failed to fetch historical data from Google Analytics: ${error.message || 'Unknown error'}`);
     }
   },
 
