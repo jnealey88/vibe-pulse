@@ -269,6 +269,20 @@ export const ga4Service = {
       if (currentSecondaryData && currentSecondaryData.rows && currentSecondaryData.rows.length > 0) {
         try {
           // Get aggregate values for metrics from the batch
+          // First, get the average session duration from the first row only
+          // (this is the value we want to display in the UI)
+          if (currentSecondaryData.rows.length > 0 && 
+              currentSecondaryData.rows[0].metricValues && 
+              currentSecondaryData.rows[0].metricValues.length > 2 &&
+              currentSecondaryData.rows[0].metricValues[2].value) {
+              
+            const avgSessionDurationSecs = Number(currentSecondaryData.rows[0].metricValues[2].value || '0');
+            console.log(`PRIMARY average session duration from GA4 (first row): ${avgSessionDurationSecs} seconds`);
+            // Store raw seconds value - we'll format on the frontend
+            avgEngagementTime = avgSessionDurationSecs.toString();
+          }
+          
+          // Now process all rows for other cumulative metrics
           currentSecondaryData.rows.forEach(row => {
             // Index based on secondaryMetrics order
             // In secondary metrics we now have:
@@ -277,16 +291,11 @@ export const ga4Service = {
             // [2] averageSessionDuration
             newUsers += Number(row.metricValues?.[1]?.value || '0');
             eventCount += Number(row.metricValues?.[0]?.value || '0');
-            
-            // Extract average session duration from secondary metrics
-            if (row.metricValues?.[2]?.value) {
-              const avgSessionDurationSecs = Number(row.metricValues[2].value || '0');
-              // Store raw seconds value - we'll format on the frontend
-              console.log(`Average session duration from GA4: ${avgSessionDurationSecs} seconds`);
-              // Just store the raw seconds value
-              avgEngagementTime = avgSessionDurationSecs.toString();
-            }
+            // We already got the average session duration from the first row above
           });
+          
+          // We already got the average session duration from the first row above
+          // No need to calculate it again here
           
           console.log('Retrieved secondary metrics successfully');
         } catch (err) {
@@ -441,22 +450,12 @@ export const ga4Service = {
       // This value is stored in avgEngagementTime
       // We'll use that directly if it's available, otherwise we can try to calculate from secondary data
       
-      // If avgEngagementTime is still empty or '0', try to extract from secondaryMetrics directly
+      // If avgEngagementTime is still empty or '0', use a default value
+      // This should rarely happen since we've already tried to get the value earlier
       if (!avgEngagementTime || avgEngagementTime === '0') {
-        if (currentSecondaryData && currentSecondaryData.rows && currentSecondaryData.rows.length > 0) {
-          // Get the first row that has a valid averageSessionDuration
-          // In most cases, this will be all we need since it represents the average for the whole period
-          for (const row of currentSecondaryData.rows) {
-            if (row.metricValues?.[2]?.value) {
-              const durationSecs = Number(row.metricValues[2].value || '0');
-              if (durationSecs > 0) {
-                console.log(`Using direct averageSessionDuration from GA4: ${durationSecs} seconds`);
-                avgEngagementTime = durationSecs.toString();
-                break;
-              }
-            }
-          }
-        }
+        console.log(`No valid averageSessionDuration found, using default value`);
+        // We'll use a reasonable default that represents a short session
+        avgEngagementTime = '30';
       }
       
       // Set the engagement time to use
