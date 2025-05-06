@@ -55,7 +55,7 @@ export const ga4Service = {
   },
 
   // Fetch key metrics from GA4 (respecting the 10 metrics per request limit)
-  fetchKeyMetrics: async (propertyId: string, authClient: any): Promise<GA4MetricsData> => {
+  fetchKeyMetrics: async (propertyId: string, authClient: any, days: number = 30): Promise<GA4MetricsData> => {
     try {
       // GA4 API has a limit of 10 metrics per request, so we need to split our metrics
       
@@ -137,7 +137,7 @@ export const ga4Service = {
           auth: authClient,
           property: `properties/${propertyId}`,
           requestBody: {
-            dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+            dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
             metrics: secondaryMetrics,
             dimensions: [
               { name: 'platform' },
@@ -153,7 +153,7 @@ export const ga4Service = {
           auth: authClient,
           property: `properties/${propertyId}`,
           requestBody: {
-            dateRanges: [{ startDate: '14daysAgo', endDate: '8daysAgo' }],
+            dateRanges: [{ startDate: previousStartDate, endDate: previousEndDate }],
             metrics: secondaryMetrics,
             dimensions: [
               { name: 'platform' },
@@ -264,7 +264,7 @@ export const ga4Service = {
           auth: authClient,
           property: `properties/${propertyId}`,
           requestBody: {
-            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
             dimensions: [{ name: 'sessionDefaultChannelGroup' }],
             metrics: [{ name: 'sessions' }]
           }
@@ -283,7 +283,7 @@ export const ga4Service = {
           auth: authClient,
           property: `properties/${propertyId}`,
           requestBody: {
-            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
             dimensions: [{ name: 'sessionSource' }],
             metrics: [{ name: 'sessions' }],
             limit: 10
@@ -303,7 +303,7 @@ export const ga4Service = {
           auth: authClient,
           property: `properties/${propertyId}`,
           requestBody: {
-            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
             dimensions: [{ name: 'pageTitle' }],
             metrics: [{ name: 'screenPageViews' }],
             limit: 15
@@ -323,7 +323,7 @@ export const ga4Service = {
           auth: authClient,
           property: `properties/${propertyId}`,
           requestBody: {
-            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
             dimensions: [{ name: 'country' }],
             metrics: [{ name: 'totalUsers' }],
             limit: 10

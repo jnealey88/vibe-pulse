@@ -72,11 +72,16 @@ export const metricsController = {
   syncMetrics: async (req: Request, res: Response) => {
     try {
       const { websiteId } = req.params;
+      const { days = 30 } = req.query; // Default to 30 days if not specified
       const parsedWebsiteId = parseInt(websiteId);
+      const parsedDays = parseInt(days as string);
       
       if (isNaN(parsedWebsiteId)) {
         return res.status(400).json({ message: 'Invalid website ID' });
       }
+      
+      // Validate days parameter (between 1 and 90)
+      const validDays = !isNaN(parsedDays) ? Math.min(90, Math.max(1, parsedDays)) : 30;
 
       // Check if website exists and belongs to the user
       const website = await storage.getWebsiteById(parsedWebsiteId);
