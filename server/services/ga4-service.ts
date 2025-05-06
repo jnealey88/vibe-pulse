@@ -10,11 +10,9 @@ export interface GA4MetricsData {
   // Conversions data made optional per client request
   conversions?: number;
   bounceRate: string;
-  pageSpeed: string;
   visitorsChange: string;
   conversionsChange?: string; // Made optional per client request
   bounceRateChange: string;
-  pageSpeedChange: string;
   
   // Additional metrics for display requested by user
   activeUsers?: number;
@@ -33,6 +31,9 @@ export interface GA4MetricsData {
   rawPreviousData?: any;
   deviceBreakdown?: Record<string, number>;
   platformBreakdown?: Record<string, number>;
+  countryBreakdown?: Record<string, number>; // Added for more comprehensive insights
+  deviceCategory?: Record<string, number>; // Added for better device segmentation
+  browserData?: Record<string, number>; // Added for browser analysis
 }
 
 export const ga4Service = {
@@ -407,11 +408,9 @@ export const ga4Service = {
         visitors: Math.round(currentVisitors), // Ensure integer
         conversions: Math.round(currentConversions), // Ensure integer
         bounceRate: `${Math.min(100, Math.max(0, currentBounceRate * 100)).toFixed(2)}%`, // Format as percentage with 2 decimal places
-        pageSpeed: `${Math.min(10, Math.max(0.5, currentPageSpeed)).toFixed(1)}s`, // Ensure realistic range (0.5-10s)
         visitorsChange: calculateChange(currentVisitors, previousVisitors),
         conversionsChange: calculateChange(currentConversions, previousConversions),
         bounceRateChange: calculateChange(currentBounceRate, previousBounceRate),
-        pageSpeedChange: calculateChange(currentPageSpeed, previousPageSpeed),
         
         // Additional metrics for dashboard display
         activeUsers: Math.round(activeUsers), // Ensure integer
