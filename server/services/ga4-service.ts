@@ -76,7 +76,8 @@ export const ga4Service = {
         { name: 'screenPageViewsPerSession' },
         { name: 'eventCount' },
         { name: 'sessions' },
-        { name: 'engagedSessionsPerUser' }
+        { name: 'activeUsers' }, // This is a valid GA4 metric
+        { name: 'averageSessionDuration' } // Use instead of engagedSessionsPerUser
       ];
       
       // Second batch of metrics (remaining ones)
@@ -84,7 +85,7 @@ export const ga4Service = {
         // More metrics for comprehensive analysis
         { name: 'eventCountPerUser' },
         { name: 'newUsers' },
-        { name: 'activeUsers' }
+        { name: 'sessionDuration' } // Use sessionDuration instead of duplicate activeUsers
         // Removed conversion/revenue related metrics per client request
       ];
 
@@ -241,13 +242,19 @@ export const ga4Service = {
         });
       }
 
-      // Fetch additional metrics from the secondary data responses
+      // Fetch additional metrics from the primary and secondary data responses
       // Default values if metrics aren't available
       let activeUsers = 0;
       let newUsers = 0;
       let eventCount = 0;
       let avgEngagementTime = '0s';
       let viewsCount = 0;
+      
+      // Extract active users from the primary metrics (at index 8)
+      if (currentPeriodResponse.data.rows && currentPeriodResponse.data.rows[0]?.metricValues?.[8]) {
+        activeUsers = Number(currentPeriodResponse.data.rows[0].metricValues[8].value || '0');
+        console.log(`Active users from GA4: ${activeUsers}`);
+      }
       
       // More structured data for display
       const sessionsByChannel: Record<string, number> = {};
@@ -260,10 +267,14 @@ export const ga4Service = {
         try {
           // Get aggregate values for metrics from the batch
           currentSecondaryData.rows.forEach(row => {
-            // Example: summing activeUsers across all dimensions
-            activeUsers += Number(row.metricValues?.[2]?.value || '0'); // Index based on secondaryMetrics order
+            // Index based on secondaryMetrics order
+            // In secondary metrics we now have:
+            // [0] eventCountPerUser 
+            // [1] newUsers
+            // [2] sessionDuration
             newUsers += Number(row.metricValues?.[1]?.value || '0');
             eventCount += Number(row.metricValues?.[0]?.value || '0');
+            // Extract from active users in the primary metrics instead
           });
           
           console.log('Retrieved secondary metrics successfully');
