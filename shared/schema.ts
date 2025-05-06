@@ -46,6 +46,7 @@ export const metrics = pgTable("metrics", {
   eventCount: integer("event_count").default(0),
   avgEngagementTime: text("avg_engagement_time").default("0s"),
   viewsCount: integer("views_count").default(0),
+  userStickiness: text("user_stickiness").default("0.0%"), // DAU/MAU ratio as percentage
   sessionsByChannel: jsonb("sessions_by_channel").default({}).notNull(),
   sessionsBySource: jsonb("sessions_by_source").default({}).notNull(),
   viewsByPage: jsonb("views_by_page").default({}).notNull(),

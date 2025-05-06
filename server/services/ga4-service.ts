@@ -25,6 +25,7 @@ export interface GA4MetricsData {
   sessionsBySource?: Record<string, number>;
   viewsByPage?: Record<string, number>;
   usersByCountry?: Record<string, number>;
+  userStickiness?: string; // DAU/MAU ratio as a percentage string
   
   // Additional data for AI analysis - optional as they may not always be set
   rawCurrentData?: any;
@@ -354,9 +355,10 @@ export const ga4Service = {
       // Define variables to hold accurate metrics
       let actualViewsCount = 0;
       let actualEventCount = 0;
+      let dauPerMau = 0; // Add DAU/MAU ratio metric from GA4
       
       try {
-        // Get actual screenPageViews count and accurate event count (no dimensions to avoid duplicates)
+        // Get actual screenPageViews count, accurate event count, and DAU/MAU ratio (no dimensions to avoid duplicates)
         const metricsResponse = await analyticsDataClient.properties.runReport({
           auth: authClient,
           property: `properties/${propertyId}`,
@@ -364,7 +366,8 @@ export const ga4Service = {
             dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
             metrics: [
               { name: 'screenPageViews' },
-              { name: 'eventCount' }
+              { name: 'eventCount' },
+              { name: 'dauPerMau' } // GA4's official user stickiness metric
             ]
           }
         });
@@ -372,7 +375,8 @@ export const ga4Service = {
         if (metricsResponse.data && metricsResponse.data.rows && metricsResponse.data.rows.length > 0) {
           actualViewsCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[0]?.value || '0'));
           actualEventCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[1]?.value || '0'));
-          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events`);
+          dauPerMau = Number(metricsResponse.data.rows[0].metricValues?.[2]?.value || '0');
+          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU: ${(dauPerMau * 100).toFixed(1)}%`);
         }
         
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
@@ -415,6 +419,8 @@ export const ga4Service = {
         avgEngagementTime,
         // Use actual screenPageViews instead of calculated estimate
         viewsCount: actualViewsCount > 0 ? actualViewsCount : 0,
+        // Use GA4's actual DAU/MAU ratio (user stickiness)
+        userStickiness: dauPerMau > 0 ? `${(dauPerMau * 100).toFixed(1)}%` : undefined,
         sessionsByChannel,
         sessionsBySource,
         viewsByPage,
@@ -623,7 +629,8 @@ export const ga4Service = {
       sessionsByChannel,
       sessionsBySource,
       viewsByPage,
-      usersByCountry
+      usersByCountry,
+      userStickiness 
     } = metricsData;
     
     return {
@@ -646,6 +653,7 @@ export const ga4Service = {
       eventCount: Math.round(eventCount || 0),
       avgEngagementTime: avgEngagementTime || '0s',
       viewsCount: Math.round(viewsCount || 0),
+      userStickiness: userStickiness || '0.0%', // Include the DAU/MAU ratio
       sessionsByChannel: sessionsByChannel || {},
       sessionsBySource: sessionsBySource || {},
       viewsByPage: viewsByPage || {},
