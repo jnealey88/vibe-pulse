@@ -153,7 +153,7 @@ export const openAiService = {
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
         temperature: 0.8, // Higher temperature for more creative and diverse insights
-        max_tokens: 2000 // Ensure we have enough tokens for comprehensive insights
+        max_tokens: 10000 // Ensure we have enough tokens for comprehensive insights
       });
 
       const content = response.choices[0].message.content;

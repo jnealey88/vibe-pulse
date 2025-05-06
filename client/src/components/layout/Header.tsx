@@ -43,12 +43,31 @@ const Header = ({
         return { message: 'Website deleted, but response parsing failed' };
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, deletedWebsiteId) => {
       toast({
         title: "Website deleted",
         description: "Website has been successfully deleted",
       });
+      
+      // Invalidate websites list
       queryClient.invalidateQueries({ queryKey: ['/api/websites'] });
+      
+      // Remove all queries related to the deleted website
+      queryClient.removeQueries({ 
+        queryKey: [`/api/websites/${deletedWebsiteId}`], 
+        exact: false 
+      });
+      
+      // If the deleted website was selected, clear the selection
+      if (selectedWebsite?.id === deletedWebsiteId) {
+        // Find another website to select or set to null
+        const remainingWebsites = websites.filter(site => site.id !== deletedWebsiteId);
+        if (remainingWebsites.length > 0) {
+          onWebsiteChange(remainingWebsites[0].id.toString());
+        } else {
+          onWebsiteChange('');
+        }
+      }
     },
     onError: (error: Error) => {
       toast({

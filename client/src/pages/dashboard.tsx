@@ -49,12 +49,19 @@ const Dashboard = () => {
     enabled: isAuthenticated,
   });
 
-  // Select first website by default when websites load
+  // Select first website by default when websites load or clear selection when all websites are deleted
   useEffect(() => {
     if (websites?.length > 0 && !selectedWebsiteId) {
+      // Select first website when loading initially
       setSelectedWebsiteId(websites[0].id.toString());
+    } else if (websites?.length === 0 && selectedWebsiteId) {
+      // Clear selected website when all websites are deleted
+      setSelectedWebsiteId(null);
+      // Clear any cached metrics and insights data
+      queryClient.removeQueries({ queryKey: ['/api/websites'] });
+      queryClient.removeQueries({ queryKey: ['/api/websites/', { exact: false }] });
     }
-  }, [websites, selectedWebsiteId]);
+  }, [websites, selectedWebsiteId, queryClient]);
 
   // Fetch metrics for selected website
   const {
