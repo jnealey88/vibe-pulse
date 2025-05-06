@@ -87,7 +87,8 @@ export const ga4Service = {
         { name: 'eventCountPerUser' },
         { name: 'newUsers' },
         // Removed invalid sessionDuration metric per GA4 API error
-        { name: 'averageSessionDuration' } // Moved from primary metrics to stay under the 10 metric limit
+        { name: 'averageSessionDuration' }, // Moved from primary metrics to stay under the 10 metric limit
+        { name: 'dauPerMau' } // Add GA4's official user stickiness metric
         // Removed conversion/revenue related metrics per client request
       ];
 
@@ -289,13 +290,12 @@ export const ga4Service = {
             // [0] eventCountPerUser 
             // [1] newUsers
             // [2] averageSessionDuration
+            // [3] dauPerMau (new addition)
             newUsers += Number(row.metricValues?.[1]?.value || '0');
             eventCount += Number(row.metricValues?.[0]?.value || '0');
             // We already got the average session duration from the first row above
+            // The DAU/MAU metric is handled separately in a dedicated section
           });
-          
-          // We already got the average session duration from the first row above
-          // No need to calculate it again here
           
           console.log('Retrieved secondary metrics successfully');
         } catch (err) {
@@ -406,7 +406,7 @@ export const ga4Service = {
       const engagementTimeStr = "0m 0s"; // Temporary placeholder
       
       try {
-        // Get actual screenPageViews count, accurate event count, and DAU/MAU ratio (no dimensions to avoid duplicates)
+        // Get actual screenPageViews count and event count (no dimensions to avoid duplicates)
         const metricsResponse = await analyticsDataClient.properties.runReport({
           auth: authClient,
           property: `properties/${propertyId}`,
@@ -414,8 +414,7 @@ export const ga4Service = {
             dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
             metrics: [
               { name: 'screenPageViews' },
-              { name: 'eventCount' },
-              { name: 'dauPerMau' } // GA4's official user stickiness metric
+              { name: 'eventCount' }
             ]
           }
         });
@@ -423,10 +422,15 @@ export const ga4Service = {
         if (metricsResponse.data && metricsResponse.data.rows && metricsResponse.data.rows.length > 0) {
           actualViewsCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[0]?.value || '0'));
           actualEventCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[1]?.value || '0'));
+        }
+        
+        // Get the DAU/MAU ratio from secondary metrics response, if available
+        // The dauPerMau metric is at index 3 in our secondaryMetrics array
+        if (currentSecondaryData && currentSecondaryData.rows && currentSecondaryData.rows.length > 0 &&
+            currentSecondaryData.rows[0].metricValues && currentSecondaryData.rows[0].metricValues.length > 3) {
+            
           // GA4 returns dauPerMau as a decimal between 0 and 1 (e.g., 0.113 for 11.3%)
-          const rawDauPerMau = metricsResponse.data.rows[0].metricValues?.[2]?.value || '0';
-          
-          // Parse the raw value, but apply validation to ensure it's within expected range
+          const rawDauPerMau = currentSecondaryData.rows[0].metricValues[3].value || '0';
           let parsedDauPerMau = Number(rawDauPerMau);
           
           // Deal with unrealistically high values (typically shouldn't be above 0.5 or 50%)
@@ -450,6 +454,16 @@ export const ga4Service = {
           dauPerMau = Math.min(parsedDauPerMau, 0.4); // Cap at 40% as a reasonable maximum
           
           console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU raw value: ${rawDauPerMau}, adjusted value: ${dauPerMau}, formatted: ${(dauPerMau * 100).toFixed(1)}%`);
+        } else {
+          console.warn('DAU/MAU data not available from GA4 secondary metrics. Using calculated fallback.');
+          // Calculate a fallback value if GA4's dauPerMau is not available
+          if (activeUsers > 0) {
+            const currentVisitors = Number(currentData[0]?.value || '0');
+            if (currentVisitors > 0) {
+              dauPerMau = Math.min(activeUsers / currentVisitors, 0.4); // Cap at 40%
+              console.log(`Calculated fallback DAU/MAU: ${dauPerMau} (active users: ${activeUsers}, total users: ${currentVisitors})`);
+            }
+          }
         }
         
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
