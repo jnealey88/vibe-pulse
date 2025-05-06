@@ -43,25 +43,31 @@ export const ga4Service = {
     }
   },
 
-  // Fetch key metrics from GA4
+  // Fetch key metrics from GA4 (respecting the 10 metrics per request limit)
   fetchKeyMetrics: async (propertyId: string, authClient: any): Promise<GA4MetricsData> => {
     try {
-      // Define validated metrics supported by GA4
-      const validMetrics = [
-        // Core metrics for display
+      // GA4 API has a limit of 10 metrics per request, so we need to split our metrics
+      
+      // First batch of metrics (core metrics + some additional ones)
+      const primaryMetrics = [
+        // Core metrics for display (these are essential)
         { name: 'totalUsers' },
         { name: 'conversions' },
         { name: 'bounceRate' },
         { name: 'averageSessionDuration' },
         
-        // Additional metrics for AI analysis
+        // Additional important metrics for AI analysis
         { name: 'sessionsPerUser' },
         { name: 'engagedSessions' },
         { name: 'screenPageViewsPerSession' },
         { name: 'eventCount' },
-        // Removed invalid metric 'averageEventCount'
         { name: 'userEngagementDuration' },
-        { name: 'engagementRate' },
+        { name: 'engagementRate' }
+      ];
+      
+      // Second batch of metrics (remaining ones)
+      const secondaryMetrics = [
+        // More metrics for comprehensive analysis
         { name: 'eventCountPerUser' },
         { name: 'newUsers' },
         { name: 'activeUsers' },
@@ -70,13 +76,14 @@ export const ga4Service = {
         { name: 'transactions' } // May be 0 if not configured
       ];
 
-      // Current period data with expanded metrics
+      console.log('Fetching first batch of GA4 metrics...');
+      // Current period data with first batch of metrics
       const currentPeriodResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
-          metrics: validMetrics,
+          metrics: primaryMetrics,
           // Add dimensions for more context
           dimensions: [
             { name: 'platform' },
@@ -85,13 +92,14 @@ export const ga4Service = {
         },
       });
 
-      // Previous period data for comparison (with same validated metrics)
+      console.log('Fetching previous period data for first batch...');
+      // Previous period data for comparison (with first batch)
       const previousPeriodResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: '14daysAgo', endDate: '8daysAgo' }],
-          metrics: validMetrics,
+          metrics: primaryMetrics,
           // Add dimensions for more context
           dimensions: [
             { name: 'platform' },
@@ -99,6 +107,47 @@ export const ga4Service = {
           ]
         },
       });
+      
+      // Secondary metrics (optional, we'll try to fetch these but continue even if they fail)
+      let currentSecondaryData = null;
+      let previousSecondaryData = null;
+      
+      try {
+        console.log('Fetching second batch of GA4 metrics...');
+        // Current period data with second batch
+        const currentSecondaryResponse = await analyticsDataClient.properties.runReport({
+          auth: authClient,
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+            metrics: secondaryMetrics,
+            dimensions: [
+              { name: 'platform' },
+              { name: 'deviceCategory' }
+            ]
+          },
+        });
+        currentSecondaryData = currentSecondaryResponse.data;
+        
+        console.log('Fetching previous period data for second batch...');
+        // Previous period data with second batch
+        const previousSecondaryResponse = await analyticsDataClient.properties.runReport({
+          auth: authClient,
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '14daysAgo', endDate: '8daysAgo' }],
+            metrics: secondaryMetrics,
+            dimensions: [
+              { name: 'platform' },
+              { name: 'deviceCategory' }
+            ]
+          },
+        });
+        previousSecondaryData = previousSecondaryResponse.data;
+      } catch (secondaryError) {
+        console.warn('Could not fetch secondary metrics, continuing with primary metrics only:', secondaryError);
+        // Continue with primary metrics only
+      }
 
       // Store the complete raw responses for AI analysis later
       const completeCurrentData = currentPeriodResponse.data;
@@ -188,27 +237,46 @@ export const ga4Service = {
   // Fetch comprehensive historical data for more context (last 30 days by default)
   fetchHistoricalData: async (propertyId: string, authClient: any, days = 60) => {
     try {
-      // Daily metrics
+      // Daily metrics (keep under 10 metrics per request)
+      // First batch - core metrics only
+      const coreMetrics = [
+        { name: 'totalUsers' },
+        { name: 'conversions' },
+        { name: 'bounceRate' },
+        { name: 'averageSessionDuration' }
+      ];
+      
+      // Second batch - enhanced metrics
+      const enhancedMetrics = [
+        { name: 'sessionsPerUser' },
+        { name: 'engagedSessions' },
+        { name: 'screenPageViewsPerSession' },
+        { name: 'eventCount' },
+        { name: 'userEngagementDuration' },
+        { name: 'newUsers' }
+      ];
+
+      console.log('Fetching core historical metrics...');
+      // Daily metrics - core metrics
       const dailyResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
           dimensions: [{ name: 'date' }],
-          metrics: [
-            // Core metrics
-            { name: 'totalUsers' },
-            { name: 'conversions' },
-            { name: 'bounceRate' },
-            { name: 'averageSessionDuration' },
-            // Enhanced metrics
-            { name: 'sessionsPerUser' },
-            { name: 'engagedSessions' },
-            { name: 'screenPageViewsPerSession' },
-            { name: 'eventCount' },
-            { name: 'userEngagementDuration' },
-            { name: 'newUsers' }
-          ],
+          metrics: coreMetrics
+        },
+      });
+      
+      console.log('Fetching enhanced historical metrics...');
+      // Daily metrics - enhanced metrics (separate request)
+      const dailyEnhancedResponse = await analyticsDataClient.properties.runReport({
+        auth: authClient,
+        property: `properties/${propertyId}`,
+        requestBody: {
+          dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
+          dimensions: [{ name: 'date' }],
+          metrics: enhancedMetrics
         },
       });
       
@@ -251,20 +319,65 @@ export const ga4Service = {
         },
       });
       
-      // Format daily trend data
-      const dailyTrends = dailyResponse.data.rows?.map(row => ({
-        date: row.dimensionValues?.[0].value,
-        visitors: Number(row.metricValues?.[0].value || '0'),
-        conversions: Number(row.metricValues?.[1].value || '0'),
-        bounceRate: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}%`,
-        pageSpeed: `${Number(row.metricValues?.[3].value || '0').toFixed(1)}s`,
-        sessionsPerUser: Number(row.metricValues?.[4]?.value || '0'),
-        engagedSessions: Number(row.metricValues?.[5]?.value || '0'),
-        pageViewsPerSession: Number(row.metricValues?.[6]?.value || '0'),
-        eventCount: Number(row.metricValues?.[7]?.value || '0'),
-        engagementDuration: Number(row.metricValues?.[8]?.value || '0'),
-        newUsers: Number(row.metricValues?.[9]?.value || '0')
-      })) || [];
+      // Process and merge the data from both requests
+      console.log('Processing historical trend data...');
+      const dailyTrends = [];
+      
+      // First, process the core metrics
+      const coreDailyData = dailyResponse.data.rows || [];
+      
+      // Create a map of dates to data for core metrics
+      const dateToDataMap = new Map();
+      
+      coreDailyData.forEach(row => {
+        const date = row.dimensionValues?.[0].value;
+        if (date) {
+          dateToDataMap.set(date, {
+            date,
+            visitors: Number(row.metricValues?.[0]?.value || '0'),
+            conversions: Number(row.metricValues?.[1]?.value || '0'),
+            bounceRate: `${Number(row.metricValues?.[2]?.value || '0').toFixed(1)}%`,
+            pageSpeed: `${Number(row.metricValues?.[3]?.value || '0').toFixed(1)}s`,
+            // Initialize enhanced metrics with defaults
+            sessionsPerUser: 0,
+            engagedSessions: 0,
+            pageViewsPerSession: 0,
+            eventCount: 0, 
+            engagementDuration: 0,
+            newUsers: 0
+          });
+        }
+      });
+      
+      // Process the enhanced metrics and merge with core metrics
+      const enhancedDailyData = dailyEnhancedResponse.data.rows || [];
+      
+      enhancedDailyData.forEach(row => {
+        const date = row.dimensionValues?.[0].value;
+        if (date && dateToDataMap.has(date)) {
+          const existingData = dateToDataMap.get(date);
+          
+          // Update with enhanced metrics
+          existingData.sessionsPerUser = Number(row.metricValues?.[0]?.value || '0');
+          existingData.engagedSessions = Number(row.metricValues?.[1]?.value || '0');
+          existingData.pageViewsPerSession = Number(row.metricValues?.[2]?.value || '0');
+          existingData.eventCount = Number(row.metricValues?.[3]?.value || '0');
+          existingData.engagementDuration = Number(row.metricValues?.[4]?.value || '0');
+          existingData.newUsers = Number(row.metricValues?.[5]?.value || '0');
+          
+          dateToDataMap.set(date, existingData);
+        }
+      });
+      
+      // Convert the map to an array sorted by date
+      dateToDataMap.forEach(data => {
+        dailyTrends.push(data);
+      });
+      
+      // Sort by date
+      dailyTrends.sort((a, b) => {
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
       
       // Format landing page data
       const landingPages = landingPageResponse.data.rows?.map(row => ({
