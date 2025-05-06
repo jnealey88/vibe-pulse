@@ -6,37 +6,12 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-  const { login, isAuthenticated, handleCallback } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Handle OAuth callback
-  useEffect(() => {
-    const processOAuthCallback = async () => {
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get("code");
-      
-      if (code) {
-        try {
-          await handleCallback(code);
-          toast({
-            title: "Login successful",
-            description: "You have been successfully logged in",
-          });
-          setLocation("/dashboard");
-        } catch (error) {
-          console.error("Authentication error:", error);
-          toast({
-            title: "Authentication failed",
-            description: error instanceof Error ? error.message : "Failed to authenticate with Google",
-            variant: "destructive",
-          });
-        }
-      }
-    };
-    
-    processOAuthCallback();
-  }, [handleCallback, setLocation, toast]);
+  // We don't need to handle the OAuth callback anymore 
+  // since the server will now redirect directly to /dashboard
 
   // Redirect if already authenticated
   useEffect(() => {

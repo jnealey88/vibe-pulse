@@ -9,7 +9,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: () => void;
   logout: () => Promise<void>;
-  handleCallback: (code: string) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -18,16 +17,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isLoading, isError } = useQuery<User>({
     queryKey: ['/api/auth/user'],
-    onSuccess: (data) => {
-      setIsAuthenticated(true);
-    },
-    onError: () => {
-      setIsAuthenticated(false);
-    },
     retry: false,
   });
+
+  // Update authentication status based on query results
+  useEffect(() => {
+    if (user) {
+      setIsAuthenticated(true);
+    } else if (isError) {
+      setIsAuthenticated(false);
+    }
+  }, [user, isError]);
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -37,31 +39,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     onSuccess: () => {
       setIsAuthenticated(false);
       queryClient.clear();
-    },
-  });
-
-  const callbackMutation = useMutation({
-    mutationFn: async (code: string) => {
-      try {
-        // First try the GET endpoint which is what Google uses for redirects
-        let response = await fetch(`/api/auth/callback?code=${encodeURIComponent(code)}`);
-        
-        // If that fails, try the POST endpoint as fallback
-        if (!response.ok) {
-          response = await apiRequest('POST', '/api/auth/callback', { code });
-        }
-        
-        const data = await response.json();
-        return data.user;
-      } catch (error) {
-        console.error("Auth callback error:", error);
-        throw error;
-      }
-    },
-    onSuccess: (user) => {
-      setIsAuthenticated(true);
-      queryClient.invalidateQueries({queryKey: ['/api/auth/user']});
-      return user;
     },
   });
 
@@ -79,10 +56,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await logoutMutation.mutateAsync();
   };
 
-  const handleCallback = async (code: string): Promise<User> => {
-    return await callbackMutation.mutateAsync(code);
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -91,7 +64,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated,
         login,
         logout,
-        handleCallback,
       }}
     >
       {children}

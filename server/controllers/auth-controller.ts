@@ -42,8 +42,9 @@ export const authController = {
     }
 
     try {
-      // Get tokens from the code
-      const { tokens } = await oauth2Client.getToken(code);
+      // Get tokens from the code - ensure we're working with a string
+      const codeStr = typeof code === 'string' ? code : String(code);
+      const { tokens } = await oauth2Client.getToken(codeStr);
       oauth2Client.setCredentials(tokens);
 
       // Get user info from Google
@@ -83,6 +84,12 @@ export const authController = {
       // Set user session
       req.session.userId = user.id;
 
+      // If it's a GET request (redirect from Google), redirect to dashboard
+      if (req.method === 'GET') {
+        return res.redirect('/dashboard');
+      }
+      
+      // For API calls (POST), return JSON
       return res.json({
         success: true,
         user: {
