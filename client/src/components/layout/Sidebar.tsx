@@ -26,14 +26,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   return (
     <>
       {/* Mobile Sidebar */}
-      <div className={`${mobileClasses} lg:hidden bg-white shadow-md`}>
-        <div className="px-6 py-4 border-b border-border">
+      <div className={`${mobileClasses} lg:hidden bg-sidebar text-sidebar-foreground shadow-md`}>
+        <div className="px-6 py-4 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="material-icons text-primary">analytics</span>
-              <h1 className="text-xl font-medium font-google-sans">GA4 Insights</h1>
+              <span className="material-icons text-primary">speed</span>
+              <h1 className="text-xl font-semibold font-google-sans text-white">Airo Pulse</h1>
             </div>
-            <button onClick={onClose} className="text-muted-foreground">
+            <button onClick={onClose} className="text-sidebar-foreground hover:text-white">
               <span className="material-icons">close</span>
             </button>
           </div>

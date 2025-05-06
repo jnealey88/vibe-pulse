@@ -6,8 +6,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'google-sans': ['"Google Sans"', 'sans-serif'],
-        'sans': ['Roboto', 'system-ui', 'sans-serif'],
+        'google-sans': ['Poppins', 'system-ui', 'sans-serif'],
+        'sans': ['Poppins', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",

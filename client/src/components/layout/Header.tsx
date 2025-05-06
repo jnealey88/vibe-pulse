@@ -60,12 +60,12 @@ const Header = ({
   });
 
   return (
-    <header className="bg-white border-b border-border py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+    <header className="bg-white border-b border-border py-4 px-6 flex justify-between items-center sticky top-0 z-10 shadow-sm">
       <div className="flex items-center gap-3 lg:hidden">
         <button onClick={onMenuToggle} className="text-muted-foreground">
           <span className="material-icons">menu</span>
         </button>
-        <h1 className="text-xl font-medium font-google-sans">GA4 Insights</h1>
+        <h1 className="text-xl font-semibold font-google-sans text-primary">Airo Pulse</h1>
       </div>
 
       {/* Website Selector */}

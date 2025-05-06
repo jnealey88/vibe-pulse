@@ -4,50 +4,54 @@
 
 @layer base {
   :root {
-    --background: 0 0% 97%;
-    --foreground: 240 5% 13%;
+    /* GoDaddy-inspired color scheme */
+    --background: 210 33% 98%;
+    --foreground: 203 43% 23%;
     
     --card: 0 0% 100%;
-    --card-foreground: 240 5% 13%;
+    --card-foreground: 203 43% 23%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 240 5% 13%;
+    --popover-foreground: 203 43% 23%;
     
-    --primary: 217 90% 61%;
+    /* GoDaddy primary teal */
+    --primary: 186 95% 36%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 140 46% 43%;
+    /* Secondary green */
+    --secondary: 142 52% 46%;
     --secondary-foreground: 0 0% 100%;
     
-    --accent: 44 95% 50%;
+    /* Accent orange */
+    --accent: 22 100% 58%;
     --accent-foreground: 0 0% 100%;
     
-    --muted: 0 0% 97%;
-    --muted-foreground: 220 2% 40%;
+    --muted: 210 33% 96%;
+    --muted-foreground: 203 15% 46%;
     
-    --destructive: 5 81% 56%;
+    --destructive: 0 86% 60%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 86%;
-    --input: 0 0% 86%;
-    --ring: 217 90% 61%;
+    --border: 203 20% 86%;
+    --input: 203 20% 86%;
+    --ring: 186 95% 36%;
 
-    --chart-1: 217 90% 61%;
-    --chart-2: 140 46% 43%;
-    --chart-3: 44 95% 50%;
-    --chart-4: 5 81% 56%;
-    --chart-5: 0 0% 97%;
+    --chart-1: 186 95% 36%;  /* Teal */
+    --chart-2: 142 52% 46%;  /* Green */
+    --chart-3: 22 100% 58%;  /* Orange */
+    --chart-4: 238 74% 61%;  /* Purple */
+    --chart-5: 210 33% 98%;  /* Light blue */
     
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 2% 40%;
-    --sidebar-primary: 217 90% 61%;
+    --sidebar-background: 203 43% 23%;
+    --sidebar-foreground: 210 33% 98%;
+    --sidebar-primary: 186 95% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 93%;
-    --sidebar-accent-foreground: 240 5% 13%;
-    --sidebar-border: 0 0% 86%;
-    --sidebar-ring: 217 90% 61%;
+    --sidebar-accent: 203 25% 30%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 203 25% 30%;
+    --sidebar-ring: 186 95% 36%;
   }
  
   * {
