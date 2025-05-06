@@ -122,7 +122,7 @@ export const openAiService = {
         
         1. Create a concise, specific title that clearly communicates the key finding
         2. Write a detailed description explaining the issue or opportunity, with specific data points supporting your analysis
-        3. Categorize the insight into one of these categories: Traffic, Conversion, Performance, Content, User Experience, Engagement, Audience, Technical
+        3. Categorize the insight into one of these categories: Traffic, Performance, Content, User Experience, Engagement, Audience, Technical
         4. Assess impact level (High, Medium, Low) based on potential ROI
         5. Suggest an appropriate Material icon name that visually represents the insight (e.g., trending_up, priority_high, speed, schedule, devices, language, group, location_on, public, visibility, trending_flat, etc.)
         6. Provide 2-4 specific, practical recommendations to address the insight, with clear expected outcomes
@@ -130,7 +130,7 @@ export const openAiService = {
         Focus on insights that are:
         - Data-driven with specific metrics referenced
         - Actionable (clear what to do)
-        - Business-relevant (tied to traffic, engagement, conversions, or user experience)
+        - Business-relevant (tied to traffic, engagement, or user experience)
         - Diverse across different aspects of the website performance
         - Prioritized by potential impact
         - Include both immediate quick wins and longer-term strategic recommendations
@@ -248,7 +248,7 @@ export const openAiService = {
         
         Please provide a comprehensive and data-driven analysis addressing the query directly.
         Use specific metrics, percentages, and trends from the provided data to support your analysis.
-        Consider user behavior, traffic patterns, engagement metrics, and conversion opportunities.
+        Consider user behavior, traffic patterns, engagement metrics, and opportunities.
         
         Include the following sections:
         1. An informative title for the report that directly addresses the query

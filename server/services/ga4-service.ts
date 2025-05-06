@@ -386,6 +386,8 @@ export const ga4Service = {
       }
       
       // Calculate engagement time string representation
+      let avgEngagementTime = '0m 0s'; // Default value
+      
       if (completeCurrentData && completeCurrentData.rows && completeCurrentData.rows.length > 0) {
         // Find engagement duration from the primary metrics (at index 8 in our array)
         const totalEngagementTime = completeCurrentData.rows.reduce((sum, row) => {
@@ -406,10 +408,11 @@ export const ga4Service = {
         // Calculate more accurate values for core metrics
         visitors: Math.round(currentVisitors), // Ensure integer
         conversions: Math.round(currentConversions), // Ensure integer
-        bounceRate: `${Math.min(100, Math.max(0, currentBounceRate * 100)).toFixed(2)}%`, // Format as percentage with 2 decimal places
+        // Ensure bounce rate is always a valid percentage string
+        bounceRate: isNaN(currentBounceRate) ? "0.00%" : `${Math.min(100, Math.max(0, currentBounceRate * 100)).toFixed(2)}%`,
         visitorsChange: calculateChange(currentVisitors, previousVisitors),
         conversionsChange: calculateChange(currentConversions, previousConversions),
-        bounceRateChange: calculateChange(currentBounceRate, previousBounceRate),
+        bounceRateChange: isNaN(currentBounceRate) || isNaN(previousBounceRate) ? "0%" : calculateChange(currentBounceRate, previousBounceRate),
         
         // Additional metrics for dashboard display
         activeUsers: Math.round(activeUsers), // Ensure integer
