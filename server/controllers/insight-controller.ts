@@ -127,9 +127,10 @@ export const insightController = {
       }
 
       return res.json(savedInsights);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error generating insights:', error);
-      return res.status(500).json({ message: `Failed to generate insights: ${error.message}` });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      return res.status(500).json({ message: `Failed to generate insights: ${errorMessage}` });
     }
   },
 
@@ -191,6 +192,9 @@ export const insightController = {
       (async () => {
         try {
           // Authenticate with Google
+          if (!user.refreshToken) {
+            throw new Error('User refresh token missing');
+          }
           const authClient = await ga4Service.authenticate(user.refreshToken);
           
           // Fetch additional data for improved insights
@@ -236,9 +240,10 @@ export const insightController = {
         status: 'pending',
         message: 'Report generation started'
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error generating report:', error);
-      return res.status(500).json({ message: `Failed to generate report: ${error.message}` });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      return res.status(500).json({ message: `Failed to generate report: ${errorMessage}` });
     }
   },
 

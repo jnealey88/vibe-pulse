@@ -70,9 +70,10 @@ export const openAiService = {
         
         CURRENT KEY METRICS:
         - Visitors: ${currentMetrics.visitors} (${currentMetrics.visitorsChange} change)
-        - Conversions: ${currentMetrics.conversions} (${currentMetrics.conversionsChange} change)
         - Bounce Rate: ${currentMetrics.bounceRate} (${currentMetrics.bounceRateChange} change)
         - Page Speed: ${currentMetrics.pageSpeed} (${currentMetrics.pageSpeedChange} change)
+        - Active Users: ${currentMetrics.activeUsers || 0}
+        - New Users: ${currentMetrics.newUsers || 0}
         
         DEVICE USAGE:
         ${deviceAnalysis}
@@ -88,7 +89,7 @@ export const openAiService = {
         
         HISTORICAL TRENDS:
         ${historicalData && historicalData.dailyTrends ? 
-          `Historical data spanning ${historicalData.periodCovered} showing daily trends in visitors, conversions, bounce rates, and other metrics.` : 
+          `Historical data spanning ${historicalData.periodCovered} showing daily trends in visitors, bounce rates, and other metrics.` : 
           "No historical trend data available."}
         
         Based on this comprehensive data, generate 3-5 actionable, high-value insights. For each insight:
@@ -103,7 +104,7 @@ export const openAiService = {
         Focus on insights that are:
         - Data-driven with specific metrics referenced
         - Actionable (clear what to do)
-        - Business-relevant (tied to conversions, traffic, or revenue)
+        - Business-relevant (tied to traffic, usability, or revenue)
         - Prioritized by potential impact
         
         Return the insights as a JSON array where each object has the structure:
@@ -131,9 +132,10 @@ export const openAiService = {
 
       const parsedContent = JSON.parse(content);
       return parsedContent.insights || [];
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error generating insights with OpenAI:", error);
-      throw new Error(`Failed to generate insights: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Failed to generate insights: ${errorMessage}`);
     }
   },
 
@@ -202,9 +204,10 @@ export const openAiService = {
         
         Here are the current metrics:
         - Visitors: ${metrics.visitors} (${metrics.visitorsChange} change)
-        - Conversions: ${metrics.conversions} (${metrics.conversionsChange} change)
         - Bounce Rate: ${metrics.bounceRate} (${metrics.bounceRateChange} change)
         - Page Speed: ${metrics.pageSpeed} (${metrics.pageSpeedChange} change)
+        - Active Users: ${metrics.activeUsers || 0}
+        - New Users: ${metrics.newUsers || 0}
         ${deviceSection}
         ${landingPageSection}
         ${trafficSourceSection}
@@ -245,9 +248,10 @@ export const openAiService = {
       }
 
       return JSON.parse(content);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error generating custom report with OpenAI:", error);
-      throw new Error(`Failed to generate report: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Failed to generate report: ${errorMessage}`);
     }
   },
 };
