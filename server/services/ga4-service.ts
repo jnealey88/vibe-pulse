@@ -425,8 +425,31 @@ export const ga4Service = {
           actualEventCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[1]?.value || '0'));
           // GA4 returns dauPerMau as a decimal between 0 and 1 (e.g., 0.113 for 11.3%)
           const rawDauPerMau = metricsResponse.data.rows[0].metricValues?.[2]?.value || '0';
-          dauPerMau = Number(rawDauPerMau);
-          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU raw value: ${rawDauPerMau}, formatted: ${(dauPerMau * 100).toFixed(1)}%`);
+          
+          // Parse the raw value, but apply validation to ensure it's within expected range
+          let parsedDauPerMau = Number(rawDauPerMau);
+          
+          // Deal with unrealistically high values (typically shouldn't be above 0.5 or 50%)
+          // This is a fallback for when GA4 reports unrealistic values
+          if (parsedDauPerMau > 0.5) {
+            console.warn(`Unusually high DAU/MAU value from GA4: ${parsedDauPerMau}. This may indicate a data collection issue.`);
+            
+            // If the value is suspiciously high (over 0.5 or 50%), we'll calculate it ourselves
+            // This is because DAU/MAU ratio is rarely above 50% for most websites
+            if (activeUsers > 0) {
+              // Calculate it based on the activeUsers (DAU) and totalUsers (MAU) we already have
+              const currentVisitors = Number(currentData[0]?.value || '0');
+              if (currentVisitors > 0) {
+                parsedDauPerMau = activeUsers / currentVisitors;
+                console.log(`Calculated alternative DAU/MAU: ${parsedDauPerMau} (active users: ${activeUsers}, total users: ${currentVisitors})`);
+              }
+            }
+          }
+          
+          // Assign the final value, with a reasonable cap
+          dauPerMau = Math.min(parsedDauPerMau, 0.4); // Cap at 40% as a reasonable maximum
+          
+          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU raw value: ${rawDauPerMau}, adjusted value: ${dauPerMau}, formatted: ${(dauPerMau * 100).toFixed(1)}%`);
         }
         
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
