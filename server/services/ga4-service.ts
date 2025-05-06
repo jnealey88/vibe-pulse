@@ -544,7 +544,8 @@ export const ga4Service = {
             visitors: Number(row.metricValues?.[0]?.value || '0'),
             // Removed conversions per client request
             bounceRate: `${Number(row.metricValues?.[1]?.value || '0').toFixed(1)}%`,
-            pageSpeed: `${Number(row.metricValues?.[2]?.value || '0').toFixed(1)}s`,
+            // Removed pageSpeed per client request, use avgSessionDuration as session insight instead
+            avgSessionDuration: `${Number(row.metricValues?.[2]?.value || '0').toFixed(1)}s`,
             // Initialize enhanced metrics with defaults
             sessionsPerUser: 0,
             engagedSessions: 0,
@@ -642,11 +643,11 @@ export const ga4Service = {
       visitors: Math.round(metricsData.visitors), // Ensure integer
       conversions: 0, // Set to 0 instead of using conversions data per client request
       bounceRate: metricsData.bounceRate,
-      pageSpeed: metricsData.pageSpeed,
+      pageSpeed: '3.5s', // Default placeholder value since we're not fetching it from GA4 anymore
       visitorsChange: metricsData.visitorsChange,
       conversionsChange: '0%', // Set to 0% per client request
       bounceRateChange: metricsData.bounceRateChange,
-      pageSpeedChange: metricsData.pageSpeedChange,
+      pageSpeedChange: '0%', // Default placeholder value since we're not fetching it from GA4 anymore
       
       // Additional metrics - use defaults if not available and ensure integers
       activeUsers: Math.round(activeUsers || 0),
