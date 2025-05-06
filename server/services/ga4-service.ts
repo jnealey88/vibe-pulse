@@ -352,16 +352,21 @@ export const ga4Service = {
       // These require separate API calls because of the dimension combinations
       
       try {
+        // Get actual screenPageViews count
+        const viewsResponse = await analyticsDataClient.properties.runReport({
+          auth: authClient,
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
+            metrics: [{ name: 'screenPageViews' }]
+          }
+        });
+        
+        if (viewsResponse.data && viewsResponse.data.rows && viewsResponse.data.rows.length > 0) {
+          formattedData.viewsCount = Math.round(Number(viewsResponse.data.rows[0].metricValues?.[0]?.value || '0'));
+        }
+        
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
-        
-        // You would make additional API calls here for:
-        // 1. sessionsByChannel - sessions by channelGrouping
-        // 2. sessionsBySource - sessions by sessionSource
-        // 3. viewsByPage - screenPageViews by pagePath
-        // 4. usersByCountry - activeUsers by country
-        
-        // For now we're using empty objects, but these would be populated
-        // from additional API calls in a production environment
       } catch (dimensionErr) {
         console.warn('Could not fetch dimension metrics:', dimensionErr);
       }
@@ -399,8 +404,8 @@ export const ga4Service = {
         newUsers: Math.round(newUsers), // Ensure integer
         eventCount: Math.round(eventCount), // Ensure integer
         avgEngagementTime,
-        // Calculate views from screenPageViews if available
-        viewsCount: Math.round(eventCount > 0 ? eventCount * 0.7 : currentVisitors * 2.5), // More accurate calculation
+        // Use actual screenPageViews instead of calculated estimate
+        viewsCount: 0, // Will be filled in by a separate API call below
         sessionsByChannel,
         sessionsBySource,
         viewsByPage,

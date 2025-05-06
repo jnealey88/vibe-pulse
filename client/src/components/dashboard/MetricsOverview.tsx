@@ -114,8 +114,9 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     [];
     
   // Calculate user stickiness (DAU/MAU ratio) if we have data
-  const userStickiness = metrics.activeUsers && metrics.visitors ? 
-    Math.min(75, Math.max(15, Math.round((metrics.activeUsers / (metrics.visitors * 3)) * 100))) : 
+  // DAU/MAU ratio is actually a direct ratio between active users and total users
+  const userStickiness = metrics.activeUsers && metrics.visitors && metrics.visitors > 0 ? 
+    Math.round((metrics.activeUsers / metrics.visitors) * 100) : 
     null;
 
   return (
