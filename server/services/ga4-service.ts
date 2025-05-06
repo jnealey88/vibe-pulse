@@ -281,11 +281,10 @@ export const ga4Service = {
             // Extract average session duration from secondary metrics
             if (row.metricValues?.[2]?.value) {
               const avgSessionDurationSecs = Number(row.metricValues[2].value || '0');
-              // Format as minutes and seconds
-              const minutes = Math.floor(avgSessionDurationSecs / 60);
-              const seconds = Math.floor(avgSessionDurationSecs % 60);
-              avgEngagementTime = `${minutes}m ${seconds}s`;
-              console.log(`Average session duration from GA4: ${avgSessionDurationSecs} seconds, formatted: ${avgEngagementTime}`);
+              // Store raw seconds value - we'll format on the frontend
+              console.log(`Average session duration from GA4: ${avgSessionDurationSecs} seconds`);
+              // Just store the raw seconds value
+              avgEngagementTime = avgSessionDurationSecs.toString();
             }
           });
           
@@ -435,13 +434,13 @@ export const ga4Service = {
       }
       
       // Calculate engagement time string representation
-      // Format the user engagement duration as minutes and seconds
-      const minutes = Math.floor(userEngagementDuration / 60);
-      const seconds = Math.floor(userEngagementDuration % 60);
-      const engagementTime = `${minutes}m ${seconds}s`;
-      
-      // We'll ONLY use actual data and not provide a default - that was causing the issue
-      const engagementTimeToUse = engagementTime;
+      // Format the user engagement duration as minutes and seconds (just store seconds, we'll format in UI)
+      let engagementTimeToUse = '0s';
+      if (userEngagementDuration > 0) {
+        const minutes = Math.floor(userEngagementDuration / 60);
+        const seconds = Math.floor(userEngagementDuration % 60);
+        engagementTimeToUse = `${minutes}m ${seconds}s`;
+      }
       
       // Format data with additional AI analysis fields
       const formattedData: GA4MetricsData = {
@@ -696,7 +695,8 @@ export const ga4Service = {
       activeUsers: Math.round(activeUsers || 0),
       newUsers: Math.round(newUsers || 0),
       eventCount: Math.round(eventCount || 0),
-      avgEngagementTime: avgEngagementTime || '0s',
+      // Store the raw seconds as a string (the frontend will format it)
+      avgEngagementTime: avgEngagementTime || '0',
       viewsCount: Math.round(viewsCount || 0),
       userStickiness: userStickiness || '0.0%', // Include the DAU/MAU ratio
       sessionsByChannel: sessionsByChannel || {},

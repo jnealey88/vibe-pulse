@@ -75,7 +75,7 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     },
     {
       label: "Avg. Engagement",
-      value: metrics.avgEngagementTime || "-",
+      value: metrics.avgEngagementTime ? formatEngagementTime(metrics.avgEngagementTime) : "-",
       icon: "timer",
       iconColor: "text-orange-500",
     },
@@ -222,6 +222,25 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     </div>
   );
 };
+
+// Helper function to format engagement time from seconds to "Xm Ys" format
+function formatEngagementTime(timeValue: string): string {
+  // If the time already has a format like "Xm Ys", return it as is
+  if (timeValue.includes('m') && timeValue.includes('s')) {
+    return timeValue;
+  }
+  
+  // Try to parse the value as a number (seconds)
+  const seconds = parseInt(timeValue, 10);
+  if (isNaN(seconds)) {
+    return timeValue; // If parsing fails, return the original value
+  }
+  
+  // Convert seconds to minutes and seconds format
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}m ${remainingSeconds}s`;
+}
 
 // Helper function to get country name from country code
 function getCountryName(countryCode: string): string {
