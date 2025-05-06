@@ -380,7 +380,7 @@ export const ga4Service = {
         // Calculate more accurate values for core metrics
         visitors: Math.round(currentVisitors), // Ensure integer
         conversions: Math.round(currentConversions), // Ensure integer
-        bounceRate: `${Math.min(100, Math.max(1, Math.round(currentBounceRate * 100) / 100)).toFixed(1)}%`, // Ensure realistic range (1-100%)
+        bounceRate: `${Math.min(100, Math.max(0, currentBounceRate * 100)).toFixed(2)}%`, // Format as percentage with 2 decimal places
         pageSpeed: `${Math.min(10, Math.max(0.5, currentPageSpeed)).toFixed(1)}s`, // Ensure realistic range (0.5-10s)
         visitorsChange: calculateChange(currentVisitors, previousVisitors),
         conversionsChange: calculateChange(currentConversions, previousConversions),
