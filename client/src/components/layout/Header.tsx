@@ -121,7 +121,7 @@ const Header = ({
           <SelectTrigger className="bg-white border border-border rounded-md">
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent defaultValue="30">
             <SelectItem value="7">Last 7 days</SelectItem>
             <SelectItem value="30">Last 30 days</SelectItem>
             <SelectItem value="90">Last 90 days</SelectItem>

@@ -20,7 +20,7 @@ import { Website, Metric } from "@/types/metric";
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState("7");
+  const [dateRange, setDateRange] = useState("30"); // Default to 30 days
   const [filters, setFilters] = useState<InsightFilters>({
     category: "All Categories",
     impact: "All Impacts",

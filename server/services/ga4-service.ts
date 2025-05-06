@@ -88,12 +88,19 @@ export const ga4Service = {
       ];
 
       console.log('Fetching first batch of GA4 metrics...');
+      // Determine date ranges based on days parameter
+      const currentStartDate = `${days}daysAgo`;
+      const previousStartDate = `${days * 2}daysAgo`;
+      const previousEndDate = `${days + 1}daysAgo`;
+      
+      console.log(`Using date range: ${currentStartDate} to today (${days} days)`);
+      
       // Current period data with first batch of metrics
       const currentPeriodResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
-          dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+          dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
           metrics: primaryMetrics,
           // Add dimensions for more context
           dimensions: [
@@ -109,7 +116,7 @@ export const ga4Service = {
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
-          dateRanges: [{ startDate: '14daysAgo', endDate: '8daysAgo' }],
+          dateRanges: [{ startDate: previousStartDate, endDate: previousEndDate }],
           metrics: primaryMetrics,
           // Add dimensions for more context
           dimensions: [
