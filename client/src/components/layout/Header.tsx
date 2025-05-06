@@ -2,6 +2,12 @@ import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Website } from "@/types/metric";
 import { useMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ga4Service from "@/lib/ga4-service";
+import { useToast } from "@/hooks/use-toast";
 
 interface HeaderProps {
   websites: Website[];
@@ -21,6 +27,27 @@ const Header = ({
   onMenuToggle,
 }: HeaderProps) => {
   const isMobile = useMobile();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Delete website mutation
+  const deleteWebsiteMutation = useMutation({
+    mutationFn: (websiteId: number) => ga4Service.deleteWebsite(websiteId),
+    onSuccess: () => {
+      toast({
+        title: "Website deleted",
+        description: "Website has been successfully deleted",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/websites'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete website: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <header className="bg-white border-b border-border py-4 px-6 flex justify-between items-center sticky top-0 z-10">
@@ -34,18 +61,47 @@ const Header = ({
       {/* Website Selector */}
       <div className={`${isMobile ? 'hidden' : 'flex'} md:flex items-center gap-2`}>
         <span className="material-icons text-muted-foreground">language</span>
-        <Select value={selectedWebsite?.id?.toString() || ""} onValueChange={onWebsiteChange}>
-          <SelectTrigger className="bg-white border border-border rounded-md w-[200px]">
-            <SelectValue placeholder="Select a website" />
-          </SelectTrigger>
-          <SelectContent>
-            {websites.map((website) => (
-              <SelectItem key={website.id} value={website.id.toString()}>
-                {website.domain}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select value={selectedWebsite?.id?.toString() || ""} onValueChange={onWebsiteChange}>
+            <SelectTrigger className="bg-white border border-border rounded-md w-[200px]">
+              <SelectValue placeholder="Select a website" />
+            </SelectTrigger>
+            <SelectContent>
+              {websites.map((website) => (
+                <SelectItem key={website.id} value={website.id.toString()}>
+                  {website.domain}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {selectedWebsite && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Website</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedWebsite.domain}? This action will remove all metrics, insights, and reports associated with this website and cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => deleteWebsiteMutation.mutate(selectedWebsite.id)}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    {deleteWebsiteMutation.isPending ? "Deleting..." : "Delete Website"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
 
       {/* Date Range Selector */}

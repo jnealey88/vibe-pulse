@@ -68,6 +68,11 @@ export const ga4Service = {
     return response.json();
   },
   
+  deleteWebsite: async (websiteId: number): Promise<{message: string}> => {
+    const response = await apiRequest('DELETE', `/api/websites/${websiteId}`);
+    return response.json();
+  },
+  
   getAvailableGa4Properties: async (): Promise<Array<{
     accountName: string;
     propertyName: string;

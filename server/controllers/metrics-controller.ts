@@ -155,6 +155,41 @@ export const metricsController = {
       console.error('Error adding website:', error);
       return res.status(500).json({ message: 'Failed to add website' });
     }
+  },
+  
+  // Delete a website
+  deleteWebsite: async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      const websiteId = parseInt(req.params.websiteId);
+      
+      if (isNaN(websiteId)) {
+        return res.status(400).json({ message: 'Invalid website ID' });
+      }
+      
+      // Verify the website belongs to the user
+      const website = await storage.getWebsiteById(websiteId);
+      
+      if (!website) {
+        return res.status(404).json({ message: 'Website not found' });
+      }
+      
+      if (website.userId !== userId) {
+        return res.status(403).json({ message: 'Not authorized to delete this website' });
+      }
+      
+      await storage.deleteWebsite(websiteId);
+      
+      return res.status(200).json({ message: 'Website deleted successfully' });
+    } catch (error: any) {
+      console.error('Error deleting website:', error);
+      return res.status(500).json({ message: `Failed to delete website: ${error.message || 'Unknown error'}` });
+    }
   }
 };
 

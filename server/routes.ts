@@ -60,6 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Websites routes
   app.get(`${apiPrefix}/websites`, authenticate, metricsController.getUserWebsites);
   app.post(`${apiPrefix}/websites`, authenticate, metricsController.addWebsite);
+  app.delete(`${apiPrefix}/websites/:websiteId`, authenticate, metricsController.deleteWebsite);
   app.get(`${apiPrefix}/ga4-properties`, authenticate, metricsController.getAvailableGa4Properties);
 
   // Metrics routes

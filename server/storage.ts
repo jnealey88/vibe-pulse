@@ -54,6 +54,20 @@ export const storage = {
     const [newWebsite] = await db.insert(schema.websites).values(website).returning();
     return newWebsite;
   },
+  
+  deleteWebsite: async (id: number) => {
+    // First delete all related records (metrics, insights, reports)
+    await db.delete(schema.metrics).where(eq(schema.metrics.websiteId, id));
+    await db.delete(schema.insights).where(eq(schema.insights.websiteId, id));
+    await db.delete(schema.reports).where(eq(schema.reports.websiteId, id));
+    
+    // Then delete the website itself
+    const [deletedWebsite] = await db.delete(schema.websites)
+      .where(eq(schema.websites.id, id))
+      .returning();
+    
+    return deletedWebsite;
+  },
 
   // Metrics methods
   getLatestMetricsByWebsiteId: async (websiteId: number) => {
@@ -78,28 +92,31 @@ export const storage = {
       offset?: number;
     }
   ) => {
-    let query = db
+    let conditions = eq(schema.insights.websiteId, websiteId);
+    
+    if (options?.category && options.category !== "All Categories") {
+      conditions = and(conditions, eq(schema.insights.category, options.category));
+    }
+    
+    if (options?.impact && options.impact !== "All Impacts") {
+      conditions = and(conditions, eq(schema.insights.impact, options.impact));
+    }
+    
+    const query = db
       .select()
       .from(schema.insights)
-      .where(eq(schema.insights.websiteId, websiteId));
-
-    if (options?.category && options.category !== "All Categories") {
-      query = query.where(eq(schema.insights.category, options.category));
-    }
-
-    if (options?.impact && options.impact !== "All Impacts") {
-      query = query.where(eq(schema.insights.impact, options.impact));
-    }
-
+      .where(conditions)
+      .orderBy(desc(schema.insights.detectedAt));
+    
     if (options?.limit) {
-      query = query.limit(options.limit);
+      query.limit(options.limit);
     }
-
+    
     if (options?.offset) {
-      query = query.offset(options.offset);
+      query.offset(options.offset);
     }
-
-    return await query.orderBy(desc(schema.insights.detectedAt));
+    
+    return await query;
   },
 
   getInsightById: async (id: number) => {
