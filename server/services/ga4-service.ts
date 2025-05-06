@@ -5,6 +5,7 @@ const analyticsDataClient = google.analyticsdata('v1beta');
 const analyticsAdminClient = google.analyticsadmin('v1beta');
 
 export interface GA4MetricsData {
+  // Core metrics for UI display
   visitors: number;
   conversions: number;
   bounceRate: string;
@@ -13,6 +14,12 @@ export interface GA4MetricsData {
   conversionsChange: string;
   bounceRateChange: string;
   pageSpeedChange: string;
+  
+  // Additional data for AI analysis - optional as they may not always be set
+  rawCurrentData?: any;
+  rawPreviousData?: any;
+  deviceBreakdown?: Record<string, number>;
+  platformBreakdown?: Record<string, number>;
 }
 
 export const ga4Service = {
@@ -39,38 +46,85 @@ export const ga4Service = {
   // Fetch key metrics from GA4
   fetchKeyMetrics: async (propertyId: string, authClient: any): Promise<GA4MetricsData> => {
     try {
-      // Current period data
+      // Current period data with expanded metrics
       const currentPeriodResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
           metrics: [
+            // Core metrics for display
             { name: 'totalUsers' },
             { name: 'conversions' },
             { name: 'bounceRate' },
-            { name: 'averageSessionDuration' } // Use this instead of averagePageLoadTime
+            { name: 'averageSessionDuration' },
+            
+            // Additional metrics for AI analysis
+            { name: 'sessionsPerUser' },
+            { name: 'engagedSessions' },
+            { name: 'screenPageViewsPerSession' },
+            { name: 'eventCount' },
+            { name: 'averageEventCount' },
+            { name: 'userEngagementDuration' },
+            { name: 'engagementRate' },
+            { name: 'eventCountPerUser' },
+            { name: 'newUsers' },
+            { name: 'activeUsers' },
+            { name: 'totalRevenue' }, // May be 0 if not configured
+            { name: 'purchaseRevenue' }, // May be 0 if not configured
+            { name: 'transactions' } // May be 0 if not configured
           ],
+          // Add dimensions for more context
+          dimensions: [
+            { name: 'platform' },
+            { name: 'deviceCategory' }
+          ]
         },
       });
 
-      // Previous period data for comparison
+      // Previous period data for comparison (with same extended metrics)
       const previousPeriodResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: '14daysAgo', endDate: '8daysAgo' }],
           metrics: [
+            // Core metrics for display
             { name: 'totalUsers' },
             { name: 'conversions' },
             { name: 'bounceRate' },
-            { name: 'averageSessionDuration' } // Use this instead of averagePageLoadTime
+            { name: 'averageSessionDuration' },
+            
+            // Additional metrics for AI analysis (same as above)
+            { name: 'sessionsPerUser' },
+            { name: 'engagedSessions' },
+            { name: 'screenPageViewsPerSession' },
+            { name: 'eventCount' },
+            { name: 'averageEventCount' },
+            { name: 'userEngagementDuration' },
+            { name: 'engagementRate' },
+            { name: 'eventCountPerUser' },
+            { name: 'newUsers' },
+            { name: 'activeUsers' },
+            { name: 'totalRevenue' },
+            { name: 'purchaseRevenue' },
+            { name: 'transactions' }
           ],
+          // Add dimensions for more context (same as above)
+          dimensions: [
+            { name: 'platform' },
+            { name: 'deviceCategory' }
+          ]
         },
       });
 
-      const currentData = currentPeriodResponse.data.rows?.[0]?.metricValues || [];
-      const previousData = previousPeriodResponse.data.rows?.[0]?.metricValues || [];
+      // Store the complete raw responses for AI analysis later
+      const completeCurrentData = currentPeriodResponse.data;
+      const completePreviousData = previousPeriodResponse.data;
+      
+      // For display in UI, just extract the first 4 metrics (the ones we're displaying)
+      const currentData = currentPeriodResponse.data.rows?.[0]?.metricValues?.slice(0, 4) || [];
+      const previousData = previousPeriodResponse.data.rows?.[0]?.metricValues?.slice(0, 4) || [];
 
       // Calculate percentage changes
       const calculateChange = (current: number, previous: number): string => {
@@ -92,8 +146,40 @@ export const ga4Service = {
       const currentPageSpeed = Number(currentData[3]?.value || '0');
       const previousPageSpeed = Number(previousData[3]?.value || '0');
 
-      // Format data
+      // Process device and platform breakdown data for AI analysis
+      const deviceBreakdown: Record<string, number> = {};
+      const platformBreakdown: Record<string, number> = {};
+      
+      // Process the dimension data from the response
+      if (currentPeriodResponse.data.rows && currentPeriodResponse.data.rows.length > 0) {
+        currentPeriodResponse.data.rows.forEach(row => {
+          const platform = row.dimensionValues?.[0]?.value || 'unknown';
+          const device = row.dimensionValues?.[1]?.value || 'unknown';
+          const users = Number(row.metricValues?.[0]?.value || '0');
+          
+          // Add to platform breakdown
+          if (platform) {
+            if (platformBreakdown[platform]) {
+              platformBreakdown[platform] += users;
+            } else {
+              platformBreakdown[platform] = users;
+            }
+          }
+          
+          // Add to device breakdown
+          if (device) {
+            if (deviceBreakdown[device]) {
+              deviceBreakdown[device] += users;
+            } else {
+              deviceBreakdown[device] = users;
+            }
+          }
+        });
+      }
+
+      // Format data with additional AI analysis fields
       const formattedData: GA4MetricsData = {
+        // Core metrics for UI display
         visitors: currentVisitors,
         conversions: currentConversions,
         bounceRate: `${currentBounceRate.toFixed(1)}%`,
@@ -101,7 +187,13 @@ export const ga4Service = {
         visitorsChange: calculateChange(currentVisitors, previousVisitors),
         conversionsChange: calculateChange(currentConversions, previousConversions),
         bounceRateChange: calculateChange(currentBounceRate, previousBounceRate),
-        pageSpeedChange: calculateChange(currentPageSpeed, previousPageSpeed)
+        pageSpeedChange: calculateChange(currentPageSpeed, previousPageSpeed),
+        
+        // Additional data for AI analysis
+        rawCurrentData: completeCurrentData,
+        rawPreviousData: completePreviousData,
+        deviceBreakdown, 
+        platformBreakdown
       };
 
       return formattedData;
@@ -111,31 +203,111 @@ export const ga4Service = {
     }
   },
 
-  // Fetch historical data for more context (last 30 days by default)
-  fetchHistoricalData: async (propertyId: string, authClient: any, days = 30) => {
+  // Fetch comprehensive historical data for more context (last 30 days by default)
+  fetchHistoricalData: async (propertyId: string, authClient: any, days = 60) => {
     try {
-      const response = await analyticsDataClient.properties.runReport({
+      // Daily metrics
+      const dailyResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
           dimensions: [{ name: 'date' }],
           metrics: [
+            // Core metrics
             { name: 'totalUsers' },
             { name: 'conversions' },
             { name: 'bounceRate' },
-            { name: 'averageSessionDuration' }
+            { name: 'averageSessionDuration' },
+            // Enhanced metrics
+            { name: 'sessionsPerUser' },
+            { name: 'engagedSessions' },
+            { name: 'screenPageViewsPerSession' },
+            { name: 'eventCount' },
+            { name: 'userEngagementDuration' },
+            { name: 'newUsers' }
           ],
         },
       });
-
-      const formattedData = response.data.rows?.map(row => ({
+      
+      // Get landing page performance 
+      const landingPageResponse = await analyticsDataClient.properties.runReport({
+        auth: authClient,
+        property: `properties/${propertyId}`,
+        requestBody: {
+          dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
+          dimensions: [{ name: 'landingPage' }],
+          metrics: [
+            { name: 'totalUsers' },
+            { name: 'bounceRate' },
+            { name: 'averageSessionDuration' },
+            { name: 'conversions' }
+          ],
+          limit: 10,
+          orderBys: [
+            { metric: { metricName: 'totalUsers' }, desc: true }
+          ]
+        },
+      });
+      
+      // Get traffic source data
+      const trafficSourceResponse = await analyticsDataClient.properties.runReport({
+        auth: authClient,
+        property: `properties/${propertyId}`,
+        requestBody: {
+          dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
+          dimensions: [{ name: 'sessionSource' }],
+          metrics: [
+            { name: 'totalUsers' },
+            { name: 'conversions' },
+            { name: 'bounceRate' }
+          ],
+          limit: 10,
+          orderBys: [
+            { metric: { metricName: 'totalUsers' }, desc: true }
+          ]
+        },
+      });
+      
+      // Format daily trend data
+      const dailyTrends = dailyResponse.data.rows?.map(row => ({
         date: row.dimensionValues?.[0].value,
         visitors: Number(row.metricValues?.[0].value || '0'),
         conversions: Number(row.metricValues?.[1].value || '0'),
         bounceRate: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}%`,
         pageSpeed: `${Number(row.metricValues?.[3].value || '0').toFixed(1)}s`,
+        sessionsPerUser: Number(row.metricValues?.[4]?.value || '0'),
+        engagedSessions: Number(row.metricValues?.[5]?.value || '0'),
+        pageViewsPerSession: Number(row.metricValues?.[6]?.value || '0'),
+        eventCount: Number(row.metricValues?.[7]?.value || '0'),
+        engagementDuration: Number(row.metricValues?.[8]?.value || '0'),
+        newUsers: Number(row.metricValues?.[9]?.value || '0')
       })) || [];
+      
+      // Format landing page data
+      const landingPages = landingPageResponse.data.rows?.map(row => ({
+        page: row.dimensionValues?.[0].value,
+        visitors: Number(row.metricValues?.[0].value || '0'),
+        bounceRate: `${Number(row.metricValues?.[1].value || '0').toFixed(1)}%`,
+        avgSessionDuration: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}s`,
+        conversions: Number(row.metricValues?.[3].value || '0')
+      })) || [];
+      
+      // Format traffic source data
+      const trafficSources = trafficSourceResponse.data.rows?.map(row => ({
+        source: row.dimensionValues?.[0].value,
+        visitors: Number(row.metricValues?.[0].value || '0'),
+        conversions: Number(row.metricValues?.[1].value || '0'),
+        bounceRate: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}%`,
+      })) || [];
+      
+      // Combine all data into a comprehensive historical dataset
+      const formattedData = {
+        dailyTrends,
+        landingPages,
+        trafficSources,
+        periodCovered: `${days} days`
+      };
 
       return formattedData;
     } catch (error: any) {
