@@ -242,115 +242,115 @@ const Dashboard = () => {
               metrics={metrics || null} 
               isLoading={isLoadingMetrics || syncMetricsMutation.isPending} 
             />
-          </div>
           
-          {/* AI Insights */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-              <div className="flex items-center justify-between w-full md:w-auto">
-                <h3 className="text-xl font-semibold font-google-sans text-foreground">Smart Insights</h3>
-                {selectedWebsite && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="md:ml-4 md:hidden border-primary border-2 text-primary hover:bg-primary/10 font-medium"
-                    onClick={() => generateInsightsMutation.mutate()}
-                    disabled={generateInsightsMutation.isPending}
-                  >
-                    <span className="material-icons text-sm mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
-                    {generateInsightsMutation.isPending ? "Generating..." : "Generate Insights"}
-                  </Button>
-                )}
-              </div>
-              
-              <div className="flex gap-3 w-full md:w-auto items-center">
-                {selectedWebsite && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="hidden md:flex border-primary border-2 text-primary hover:bg-primary/10 font-medium"
-                    onClick={() => generateInsightsMutation.mutate()}
-                    disabled={generateInsightsMutation.isPending}
-                  >
-                    <span className="material-icons text-sm mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
-                    {generateInsightsMutation.isPending ? "Generating..." : "Generate Insights"}
-                  </Button>
-                )}
-                <InsightsFilter filters={filters} onFilterChange={handleFilterChange} />
-              </div>
-            </div>
-            
-            {/* Insight Cards */}
-            {isLoadingInsights || generateInsightsMutation.isPending ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {[1, 2].map((i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <div className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <Skeleton className="h-6 w-48" />
-                        <Skeleton className="h-6 w-24 rounded-full" />
-                      </div>
-                      <Skeleton className="h-24 w-full mb-4" />
-                      <Skeleton className="h-32 w-full mb-4" />
-                      <div className="flex gap-4">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-4 w-32" />
-                      </div>
-                    </div>
-                    <div className="bg-muted px-5 py-3 flex justify-between items-center">
-                      <Skeleton className="h-4 w-40" />
-                      <Skeleton className="h-8 w-24" />
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : insights.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {insights.map((insight) => (
-                  <InsightCard 
-                    key={insight.id} 
-                    insight={insight} 
-                    onViewDetails={handleViewInsightDetails} 
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <span className="material-icons text-4xl text-muted-foreground mb-3">psychology</span>
-                  <h4 className="text-lg font-google-sans font-medium mb-2">No insights yet</h4>
-                  <p className="text-muted-foreground mb-6">
-                    {selectedWebsite 
-                      ? "Generate your first insights by clicking the button above"
-                      : "Select a website to generate insights"}
-                  </p>
+            {/* AI Insights - Moved here to be right below Website Activity Metrics */}
+            <div className="mt-8 mb-6">
+              <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+                <div className="flex items-center justify-between w-full md:w-auto">
+                  <h3 className="text-xl font-semibold font-google-sans text-foreground">Smart Insights</h3>
                   {selectedWebsite && (
                     <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="md:ml-4 md:hidden border-primary border-2 text-primary hover:bg-primary/10 font-medium"
                       onClick={() => generateInsightsMutation.mutate()}
                       disabled={generateInsightsMutation.isPending}
-                      className="border-primary border text-white bg-primary hover:bg-primary/90 font-medium"
                     >
-                      <span className="material-icons mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
-                      {generateInsightsMutation.isPending ? "Generating..." : "Generate First Insights"}
+                      <span className="material-icons text-sm mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
+                      {generateInsightsMutation.isPending ? "Generating..." : "Generate Insights"}
                     </Button>
                   )}
-                </CardContent>
-              </Card>
-            )}
-            
-            {insights.length > 0 && (
-              <div className="flex justify-center mt-8">
-                <Button 
-                  variant="outline" 
-                  onClick={handleLoadMoreInsights}
-                  className="border-primary border-2 text-primary hover:bg-primary/10 font-medium"
-                  disabled={generateInsightsMutation.isPending}
-                >
-                  <span className="material-icons mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
-                  {generateInsightsMutation.isPending ? "Generating..." : "Load More Insights"}
-                </Button>
+                </div>
+                
+                <div className="flex gap-3 w-full md:w-auto items-center">
+                  {selectedWebsite && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="hidden md:flex border-primary border-2 text-primary hover:bg-primary/10 font-medium"
+                      onClick={() => generateInsightsMutation.mutate()}
+                      disabled={generateInsightsMutation.isPending}
+                    >
+                      <span className="material-icons text-sm mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
+                      {generateInsightsMutation.isPending ? "Generating..." : "Generate Insights"}
+                    </Button>
+                  )}
+                  <InsightsFilter filters={filters} onFilterChange={handleFilterChange} />
+                </div>
               </div>
-            )}
+              
+              {/* Insight Cards */}
+              {isLoadingInsights || generateInsightsMutation.isPending ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {[1, 2].map((i) => (
+                    <Card key={i} className="overflow-hidden">
+                      <div className="p-5">
+                        <div className="flex justify-between items-start mb-4">
+                          <Skeleton className="h-6 w-48" />
+                          <Skeleton className="h-6 w-24 rounded-full" />
+                        </div>
+                        <Skeleton className="h-24 w-full mb-4" />
+                        <Skeleton className="h-32 w-full mb-4" />
+                        <div className="flex gap-4">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-4 w-32" />
+                        </div>
+                      </div>
+                      <div className="bg-muted px-5 py-3 flex justify-between items-center">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-8 w-24" />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : insights.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {insights.map((insight) => (
+                    <InsightCard 
+                      key={insight.id} 
+                      insight={insight} 
+                      onViewDetails={handleViewInsightDetails} 
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <span className="material-icons text-4xl text-muted-foreground mb-3">psychology</span>
+                    <h4 className="text-lg font-google-sans font-medium mb-2">No insights yet</h4>
+                    <p className="text-muted-foreground mb-6">
+                      {selectedWebsite 
+                        ? "Generate your first insights by clicking the button above"
+                        : "Select a website to generate insights"}
+                    </p>
+                    {selectedWebsite && (
+                      <Button 
+                        onClick={() => generateInsightsMutation.mutate()}
+                        disabled={generateInsightsMutation.isPending}
+                        className="border-primary border text-white bg-primary hover:bg-primary/90 font-medium"
+                      >
+                        <span className="material-icons mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
+                        {generateInsightsMutation.isPending ? "Generating..." : "Generate First Insights"}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+              
+              {insights.length > 0 && (
+                <div className="flex justify-center mt-8">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleLoadMoreInsights}
+                    className="border-primary border-2 text-primary hover:bg-primary/10 font-medium"
+                    disabled={generateInsightsMutation.isPending}
+                  >
+                    <span className="material-icons mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
+                    {generateInsightsMutation.isPending ? "Generating..." : "Load More Insights"}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Add Website Modal */}
