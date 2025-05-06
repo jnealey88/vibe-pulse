@@ -49,7 +49,7 @@ export const ga4Service = {
             { name: 'totalUsers' },
             { name: 'conversions' },
             { name: 'bounceRate' },
-            { name: 'averagePageLoadTime' }
+            { name: 'averageSessionDuration' } // Use this instead of averagePageLoadTime
           ],
         },
       });
@@ -64,7 +64,7 @@ export const ga4Service = {
             { name: 'totalUsers' },
             { name: 'conversions' },
             { name: 'bounceRate' },
-            { name: 'averagePageLoadTime' }
+            { name: 'averageSessionDuration' } // Use this instead of averagePageLoadTime
           ],
         },
       });
@@ -124,7 +124,7 @@ export const ga4Service = {
             { name: 'totalUsers' },
             { name: 'conversions' },
             { name: 'bounceRate' },
-            { name: 'averagePageLoadTime' }
+            { name: 'averageSessionDuration' }
           ],
         },
       });
