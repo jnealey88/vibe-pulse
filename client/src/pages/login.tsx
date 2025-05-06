@@ -25,6 +25,7 @@ const Login = () => {
           });
           setLocation("/dashboard");
         } catch (error) {
+          console.error("Authentication error:", error);
           toast({
             title: "Authentication failed",
             description: error instanceof Error ? error.message : "Failed to authenticate with Google",
@@ -35,7 +36,7 @@ const Login = () => {
     };
     
     processOAuthCallback();
-  }, []);
+  }, [handleCallback, setLocation, toast]);
 
   // Redirect if already authenticated
   useEffect(() => {

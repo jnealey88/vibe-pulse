@@ -4,6 +4,13 @@ import { storage } from "./storage";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
 import { pool } from "@db";
+
+// Extend express-session with our custom properties
+declare module 'express-session' {
+  interface SessionData {
+    userId?: number;
+  }
+}
 import { authController } from "./controllers/auth-controller";
 import { metricsController } from "./controllers/metrics-controller";
 import { insightController } from "./controllers/insight-controller";
@@ -42,7 +49,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth routes
   app.get(`${apiPrefix}/auth/url`, authController.getAuthUrl);
-  app.post(`${apiPrefix}/auth/callback`, authController.handleAuthCallback);
+  app.get(`${apiPrefix}/auth/callback`, authController.handleAuthCallback);
+  app.post(`${apiPrefix}/auth/callback`, authController.handleAuthCallback); // Keeping POST for backward compatibility
   app.get(`${apiPrefix}/auth/user`, authenticate, authController.getCurrentUser);
   app.post(`${apiPrefix}/auth/logout`, authenticate, authController.logout);
 

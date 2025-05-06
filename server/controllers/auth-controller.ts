@@ -34,7 +34,8 @@ export const authController = {
 
   // Handle Google OAuth callback
   handleAuthCallback: async (req: Request, res: Response) => {
-    const { code } = req.body;
+    // Get code from query params (GET) or body (POST)
+    const code = req.method === 'GET' ? req.query.code : req.body.code;
 
     if (!code) {
       return res.status(400).json({ message: 'Authorization code is required' });

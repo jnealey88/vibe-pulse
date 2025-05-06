@@ -42,9 +42,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const callbackMutation = useMutation({
     mutationFn: async (code: string) => {
-      const res = await apiRequest('POST', '/api/auth/callback', { code });
-      const data = await res.json();
-      return data.user;
+      try {
+        // First try the GET endpoint which is what Google uses for redirects
+        let response = await fetch(`/api/auth/callback?code=${encodeURIComponent(code)}`);
+        
+        // If that fails, try the POST endpoint as fallback
+        if (!response.ok) {
+          response = await apiRequest('POST', '/api/auth/callback', { code });
+        }
+        
+        const data = await response.json();
+        return data.user;
+      } catch (error) {
+        console.error("Auth callback error:", error);
+        throw error;
+      }
     },
     onSuccess: (user) => {
       setIsAuthenticated(true);
