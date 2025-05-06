@@ -9,7 +9,7 @@ import Header from "@/components/layout/Header";
 import MetricsOverview from "@/components/dashboard/MetricsOverview";
 import InsightCard from "@/components/dashboard/InsightCard";
 import InsightsFilter from "@/components/dashboard/InsightsFilter";
-import GenerateReport from "@/components/dashboard/GenerateReport";
+
 import AddWebsiteModal from "@/components/dashboard/AddWebsiteModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -330,8 +330,7 @@ const Dashboard = () => {
             )}
           </div>
           
-          {/* Generate Report */}
-          <GenerateReport websiteId={selectedWebsiteId ? parseInt(selectedWebsiteId) : null} />
+
           
           {/* Add Website Modal */}
           <AddWebsiteModal 

@@ -48,8 +48,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   onClick={onClose}
                   className={`flex items-center px-6 py-3 ${
                     location === item.path
-                      ? "text-primary bg-blue-50 border-l-4 border-primary"
-                      : "text-muted-foreground hover:bg-gray-50"
+                      ? "text-white bg-sidebar-accent border-l-4 border-primary"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
                   }`}
                 >
                   <span className="material-icons mr-3">{item.icon}</span>
@@ -61,16 +61,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </nav>
 
         {user && (
-          <div className="absolute bottom-0 left-0 w-64 p-4 border-t border-border">
+          <div className="absolute bottom-0 left-0 w-64 p-4 border-t border-sidebar-border bg-sidebar-accent">
             <div className="flex items-center gap-3">
               <img
                 src={user.profileImage}
                 alt="User profile"
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full border-2 border-primary"
               />
               <div>
-                <p className="text-sm font-medium font-google-sans">{user.name}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+                <p className="text-sm font-medium font-google-sans text-white">{user.name}</p>
+                <p className="text-xs text-sidebar-foreground">{user.email}</p>
               </div>
             </div>
           </div>
@@ -78,11 +78,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="w-64 bg-white shadow-md hidden lg:block h-screen fixed">
-        <div className="px-6 py-4 border-b border-border">
+      <div className="w-64 bg-sidebar text-sidebar-foreground shadow-md hidden lg:block h-screen fixed">
+        <div className="px-6 py-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
-            <span className="material-icons text-primary">analytics</span>
-            <h1 className="text-xl font-medium font-google-sans">GA4 Insights</h1>
+            <span className="material-icons text-primary">speed</span>
+            <h1 className="text-xl font-semibold font-google-sans text-white">Airo Pulse</h1>
           </div>
         </div>
 
@@ -94,8 +94,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   href={item.path}
                   className={`flex items-center px-6 py-3 ${
                     location === item.path
-                      ? "text-primary bg-blue-50 border-l-4 border-primary"
-                      : "text-muted-foreground hover:bg-gray-50"
+                      ? "text-white bg-sidebar-accent border-l-4 border-primary"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
                   }`}
                 >
                   <span className="material-icons mr-3">{item.icon}</span>
@@ -107,16 +107,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </nav>
 
         {user && (
-          <div className="absolute bottom-0 left-0 w-64 p-4 border-t border-border">
+          <div className="absolute bottom-0 left-0 w-64 p-4 border-t border-sidebar-border bg-sidebar-accent">
             <div className="flex items-center gap-3">
               <img
                 src={user.profileImage}
                 alt="User profile"
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full border-2 border-primary"
               />
               <div>
-                <p className="text-sm font-medium font-google-sans">{user.name}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+                <p className="text-sm font-medium font-google-sans text-white">{user.name}</p>
+                <p className="text-xs text-sidebar-foreground">{user.email}</p>
               </div>
             </div>
           </div>
