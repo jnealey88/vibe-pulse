@@ -56,7 +56,9 @@ export const metricsController = {
       const metrics = await storage.getLatestMetricsByWebsiteId(parsedWebsiteId);
       
       if (!metrics) {
-        return res.status(404).json({ message: 'No metrics found for this website' });
+        // Instead of returning a 404, return an empty response to prevent client errors
+        console.log(`No metrics found for website ${websiteId}, user should sync`);
+        return res.json(null);
       }
 
       return res.json(metrics);

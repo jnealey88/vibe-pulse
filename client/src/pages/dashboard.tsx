@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import ga4Service from "@/lib/ga4-service";
-import { Website } from "@/types/metric";
+import { Website, Metric } from "@/types/metric";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -61,9 +61,18 @@ const Dashboard = () => {
     data: metrics,
     isLoading: isLoadingMetrics,
     refetch: refetchMetrics,
-  } = useQuery<any>({
+    error: metricsError,
+  } = useQuery<Metric | null>({
     queryKey: ['/api/websites', selectedWebsiteId, 'metrics'],
     enabled: !!selectedWebsiteId,
+    onSettled: (data, error) => {
+      if (data) {
+        console.log("Metrics data received:", data);
+      }
+      if (error) {
+        console.error("Error fetching metrics:", error);
+      }
+    }
   });
 
   // Fetch insights for selected website
@@ -179,7 +188,7 @@ const Dashboard = () => {
                   <div>
                     <h3 className="font-google-sans font-medium">Connected to Google Analytics 4</h3>
                     <p className="text-sm text-muted-foreground">
-                      {metrics ? (
+                      {metrics && metrics.updatedAt ? (
                         `Last synced: ${new Date(metrics.updatedAt).toLocaleString()}`
                       ) : (
                         "Not synced yet"
