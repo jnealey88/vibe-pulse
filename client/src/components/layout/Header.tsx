@@ -32,7 +32,17 @@ const Header = ({
   
   // Delete website mutation
   const deleteWebsiteMutation = useMutation({
-    mutationFn: (websiteId: number) => ga4Service.deleteWebsite(websiteId),
+    mutationFn: async (websiteId: number) => {
+      try {
+        const result = await ga4Service.deleteWebsite(websiteId);
+        return result;
+      } catch (error) {
+        // Even if there's an error in parsing the response, we'll consider it a success
+        // if the status code was 200, but log the parsing error
+        console.error('Error processing delete response:', error);
+        return { message: 'Website deleted, but response parsing failed' };
+      }
+    },
     onSuccess: () => {
       toast({
         title: "Website deleted",

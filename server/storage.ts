@@ -93,38 +93,30 @@ export const storage = {
     }
   ) => {
     try {
-      let query = db.select().from(schema.insights);
+      // Create our base query conditions
+      let baseCondition = eq(schema.insights.websiteId, websiteId);
       
-      // Build base condition
-      const conditions = [eq(schema.insights.websiteId, websiteId)];
-      
-      // Add optional filters
+      // Add optional category filter
       if (options?.category && options.category !== "All Categories") {
-        conditions.push(eq(schema.insights.category, options.category));
+        baseCondition = and(baseCondition, eq(schema.insights.category, options.category));
       }
       
+      // Add optional impact filter
       if (options?.impact && options.impact !== "All Impacts") {
-        conditions.push(eq(schema.insights.impact, options.impact));
+        baseCondition = and(baseCondition, eq(schema.insights.impact, options.impact));
       }
       
-      // Apply all conditions with AND logic
-      const finalCondition = conditions.reduce((prev, curr) => 
-        prev ? and(prev, curr) : curr
-      );
-      
-      if (finalCondition) {
-        query = query.where(finalCondition);
-      }
-      
-      // Add ordering
-      query = query.orderBy(desc(schema.insights.detectedAt));
-      
-      // Add pagination
+      // Set pagination parameters with defaults
       const limit = options?.limit ?? 100;
       const offset = options?.offset ?? 0;
       
-      const result = await query.limit(limit).offset(offset);
-      return result;
+      // Execute the query with all conditions and options
+      return await db.query.insights.findMany({
+        where: baseCondition,
+        orderBy: [desc(schema.insights.detectedAt)],
+        limit: limit,
+        offset: offset
+      });
     } catch (error) {
       console.error('Error fetching insights:', error);
       return []; // Return empty array on error
