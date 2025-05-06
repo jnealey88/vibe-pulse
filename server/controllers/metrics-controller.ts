@@ -110,6 +110,18 @@ export const metricsController = {
       
       // Format and store metrics
       const formattedMetrics = ga4Service.formatMetricsForStorage(metricsData, parsedWebsiteId);
+      
+      // Ensure pageSpeed and pageSpeedChange are never null (might be undefined from analytics)
+      if (!formattedMetrics.pageSpeed) {
+        console.log('Warning: pageSpeed was null or undefined, setting default value');
+        formattedMetrics.pageSpeed = '3.5s'; // Fallback placeholder value
+      }
+      
+      if (!formattedMetrics.pageSpeedChange) {
+        console.log('Warning: pageSpeedChange was null or undefined, setting default value');
+        formattedMetrics.pageSpeedChange = '0%'; // Fallback placeholder value
+      }
+      
       const savedMetrics = await storage.insertMetrics(formattedMetrics);
 
       return res.json(savedMetrics);
