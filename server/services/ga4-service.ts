@@ -63,6 +63,7 @@ export const ga4Service = {
       // GA4 API has a limit of 10 metrics per request, so we need to split our metrics
       
       // First batch of metrics (core metrics + some additional ones)
+      // GA4 API has a limit of 10 metrics per request
       const primaryMetrics = [
         // Core metrics for display (these are essential)
         { name: 'totalUsers' },
@@ -76,8 +77,8 @@ export const ga4Service = {
         { name: 'screenPageViewsPerSession' },
         { name: 'eventCount' },
         { name: 'sessions' },
-        { name: 'activeUsers' }, // This is a valid GA4 metric
-        { name: 'averageSessionDuration' } // Use instead of engagedSessionsPerUser
+        { name: 'activeUsers' } // This is a valid GA4 metric
+        // Moved averageSessionDuration to secondary metrics
       ];
       
       // Second batch of metrics (remaining ones)
@@ -85,7 +86,8 @@ export const ga4Service = {
         // More metrics for comprehensive analysis
         { name: 'eventCountPerUser' },
         { name: 'newUsers' },
-        { name: 'sessionDuration' } // Use sessionDuration instead of duplicate activeUsers
+        { name: 'sessionDuration' }, // Use sessionDuration instead of duplicate activeUsers
+        { name: 'averageSessionDuration' } // Moved from primary metrics to stay under the 10 metric limit
         // Removed conversion/revenue related metrics per client request
       ];
 
