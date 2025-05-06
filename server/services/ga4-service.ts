@@ -252,9 +252,10 @@ export const ga4Service = {
       let avgEngagementTime = '0s';
       let viewsCount = 0;
       
-      // Extract active users from the primary metrics (at index 8)
-      if (currentPeriodResponse.data.rows && currentPeriodResponse.data.rows[0]?.metricValues?.[8]) {
-        activeUsers = Number(currentPeriodResponse.data.rows[0].metricValues[8].value || '0');
+      // Extract active users from the primary metrics (at index 9 in the GA4 response)
+      // The 'activeUsers' metric is at position 9 in our primaryMetrics array
+      if (currentPeriodResponse.data.rows && currentPeriodResponse.data.rows[0]?.metricValues?.[9]) {
+        activeUsers = Number(currentPeriodResponse.data.rows[0].metricValues[9].value || '0');
         console.log(`Active users from GA4: ${activeUsers}`);
       }
       
@@ -276,7 +277,16 @@ export const ga4Service = {
             // [2] averageSessionDuration
             newUsers += Number(row.metricValues?.[1]?.value || '0');
             eventCount += Number(row.metricValues?.[0]?.value || '0');
-            // Extract from active users in the primary metrics instead
+            
+            // Extract average session duration from secondary metrics
+            if (row.metricValues?.[2]?.value) {
+              const avgSessionDurationSecs = Number(row.metricValues[2].value || '0');
+              // Format as minutes and seconds
+              const minutes = Math.floor(avgSessionDurationSecs / 60);
+              const seconds = Math.floor(avgSessionDurationSecs % 60);
+              avgEngagementTime = `${minutes}m ${seconds}s`;
+              console.log(`Average session duration from GA4: ${avgSessionDurationSecs} seconds, formatted: ${avgEngagementTime}`);
+            }
           });
           
           console.log('Retrieved secondary metrics successfully');
