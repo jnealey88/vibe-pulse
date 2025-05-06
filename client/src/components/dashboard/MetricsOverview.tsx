@@ -113,12 +113,6 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     })) :
     [];
     
-  // Use the DAU/MAU ratio (user stickiness) directly from the API
-  // This value comes from GA4's 'dauPerMau' metric
-  const userStickiness = metrics.userStickiness ? 
-    metrics.userStickiness.replace('%', '') : // Remove % sign to display it with our format
-    null;
-
   return (
     <div className="space-y-8">
       {/* User Activity Metrics section */}
@@ -140,29 +134,6 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
           ))}
         </div>
       </div>
-      
-      {/* User Stickiness Card - only shown when data is available */}
-      {userStickiness !== null && (
-        <div>
-          <h3 className="text-xl font-medium font-google-sans mb-4">User Stickiness</h3>
-          <div className="grid grid-cols-1 gap-6">
-            <Card className="border border-border shadow-sm">
-              <CardContent className="pt-5">
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-muted-foreground font-google-sans">DAU/MAU Ratio</span>
-                  <span className="material-icons text-blue-500">loyalty</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-3xl font-medium font-google-sans">{userStickiness}%</span>
-                  <span className="text-sm text-muted-foreground">
-                    {userStickiness && (parseFloat(userStickiness) < 20 ? 'Low' : parseFloat(userStickiness) < 50 ? 'Average' : 'High')} user engagement
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
       
       {/* Traffic Sources Section */}
       <div>

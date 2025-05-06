@@ -24,7 +24,7 @@ export interface GA4MetricsData {
   sessionsBySource?: Record<string, number>;
   viewsByPage?: Record<string, number>;
   usersByCountry?: Record<string, number>;
-  userStickiness?: string; // DAU/MAU ratio as a percentage string
+  // Removed userStickiness (DAU/MAU ratio) due to reliability issues
   
   // Additional data for AI analysis - optional as they may not always be set
   rawCurrentData?: any;
@@ -87,8 +87,8 @@ export const ga4Service = {
         { name: 'eventCountPerUser' },
         { name: 'newUsers' },
         // Removed invalid sessionDuration metric per GA4 API error
-        { name: 'averageSessionDuration' }, // Moved from primary metrics to stay under the 10 metric limit
-        { name: 'dauPerMau' } // Add GA4's official user stickiness metric
+        { name: 'averageSessionDuration' } // Moved from primary metrics to stay under the 10 metric limit
+        // Removed dauPerMau metric due to reliability issues
         // Removed conversion/revenue related metrics per client request
       ];
 
@@ -290,11 +290,9 @@ export const ga4Service = {
             // [0] eventCountPerUser 
             // [1] newUsers
             // [2] averageSessionDuration
-            // [3] dauPerMau (new addition)
             newUsers += Number(row.metricValues?.[1]?.value || '0');
             eventCount += Number(row.metricValues?.[0]?.value || '0');
             // We already got the average session duration from the first row above
-            // The DAU/MAU metric is handled separately in a dedicated section
           });
           
           console.log('Retrieved secondary metrics successfully');
@@ -400,7 +398,6 @@ export const ga4Service = {
       // Define variables to hold accurate metrics
       let actualViewsCount = 0;
       let actualEventCount = 0;
-      let dauPerMau = 0; // Add DAU/MAU ratio metric from GA4
       
       // Remove the old declaration since we'll calculate it differently below
       const engagementTimeStr = "0m 0s"; // Temporary placeholder
@@ -424,48 +421,8 @@ export const ga4Service = {
           actualEventCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[1]?.value || '0'));
         }
         
-        // IMPORTANT: Instead of relying on GA4's dauPerMau value, which is returning unusually high values,
-        // we'll calculate DAU/MAU manually based on activeUsers (DAU) and totalUsers (MAU)
-        
-        console.log('Calculating DAU/MAU ratio using our own formula instead of GA4 metric...');
-        
-        // Use activeUsers (this is our DAU - Daily Active Users)
-        // And use totalUsers (this is our MAU - Monthly Active Users over last 30 days)
-        if (activeUsers > 0) {
-          const currentVisitors = Number(currentData[0]?.value || '0');
-          
-          if (currentVisitors > 0) {
-            // FORCED manual calculation - ignore GA4's dauPerMau value entirely
-            const calculatedDauMau = activeUsers / currentVisitors;
-            
-            // Apply a reasonable cap - DAU/MAU is typically between 0.1 (10%) and 0.4 (40%)
-            // For very sticky products like social networks, 0.5 (50%) might be achievable
-            // But values close to 1.0 (100%) are almost always measurement errors
-            dauPerMau = Math.min(calculatedDauMau, 0.4); // Cap at 40% as a reasonable maximum
-            
-            console.log(`Calculated DAU/MAU: ${calculatedDauMau.toFixed(4)} (uncapped)`);
-            console.log(`Final DAU/MAU: ${dauPerMau.toFixed(4)} (after applying cap)`);
-            console.log(`Active users: ${activeUsers}, Total monthly users: ${currentVisitors}`);
-            
-          } else {
-            console.warn('Cannot calculate DAU/MAU - monthly active users count is zero');
-            dauPerMau = 0.1; // Use a reasonable default (10%)
-          }
-        } else {
-          console.warn('Cannot calculate DAU/MAU - daily active users count is zero');
-          dauPerMau = 0.1; // Use a reasonable default (10%)
-        }
-        
         // Log metrics
-        console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events, DAU/MAU value: ${dauPerMau}, formatted: ${(dauPerMau * 100).toFixed(1)}%`);
-        
-        // We'll still access GA4's dauPerMau, but only for debugging purposes
-        if (currentSecondaryData && currentSecondaryData.rows && currentSecondaryData.rows.length > 0 &&
-            currentSecondaryData.rows[0].metricValues && currentSecondaryData.rows[0].metricValues.length > 3) {
-          
-          const rawDauPerMau = currentSecondaryData.rows[0].metricValues[3].value || '0';
-          console.log(`GA4's original dauPerMau value (ignored): ${rawDauPerMau}`);
-        }
+        console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events`);
         
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
       } catch (dimensionErr) {
@@ -518,9 +475,7 @@ export const ga4Service = {
         avgEngagementTime: engagementTimeToUse, // Use our calculated value with realistic fallback
         // Use actual screenPageViews instead of calculated estimate
         viewsCount: actualViewsCount > 0 ? actualViewsCount : 0,
-        // Use GA4's actual DAU/MAU ratio (user stickiness)
-        // dauPerMau is already a decimal between 0 and 1, so format correctly
-        userStickiness: dauPerMau > 0 ? `${(dauPerMau * 100).toFixed(1)}%` : undefined,
+        // Removed DAU/MAU ratio (user stickiness) due to reliability issues
         sessionsByChannel,
         sessionsBySource,
         viewsByPage,
@@ -730,8 +685,7 @@ export const ga4Service = {
       sessionsByChannel,
       sessionsBySource,
       viewsByPage,
-      usersByCountry,
-      userStickiness 
+      usersByCountry
     } = metricsData;
     
     return {
@@ -755,7 +709,8 @@ export const ga4Service = {
       // Store the raw seconds as a string (the frontend will format it)
       avgEngagementTime: avgEngagementTime || '0',
       viewsCount: Math.round(viewsCount || 0),
-      userStickiness: userStickiness || '0.0%', // Include the DAU/MAU ratio
+      // Removed userStickiness (DAU/MAU ratio) due to reliability issues
+      userStickiness: '0.0%', // Use a blank value since we're no longer calculating this
       sessionsByChannel: sessionsByChannel || {},
       sessionsBySource: sessionsBySource || {},
       viewsByPage: viewsByPage || {},
