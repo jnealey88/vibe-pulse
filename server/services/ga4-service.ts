@@ -250,6 +250,97 @@ export const ga4Service = {
         }
       }
       
+      // Get additional metrics data
+      try {
+        // 1. Get channel breakdown
+        const channelResponse = await analyticsDataClient.properties.runReport({
+          auth: authClient,
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+            metrics: [{ name: 'sessions' }]
+          }
+        });
+        
+        if (channelResponse.data && channelResponse.data.rows) {
+          channelResponse.data.rows.forEach(row => {
+            const channel = (row.dimensionValues?.[0]?.value || 'unknown').toLowerCase();
+            const sessions = Math.round(Number(row.metricValues?.[0]?.value || '0'));
+            sessionsByChannel[channel] = sessions;
+          });
+        }
+        
+        // 2. Get source breakdown
+        const sourceResponse = await analyticsDataClient.properties.runReport({
+          auth: authClient,
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dimensions: [{ name: 'sessionSource' }],
+            metrics: [{ name: 'sessions' }],
+            limit: 10
+          }
+        });
+        
+        if (sourceResponse.data && sourceResponse.data.rows) {
+          sourceResponse.data.rows.forEach(row => {
+            const source = (row.dimensionValues?.[0]?.value || 'unknown').toLowerCase();
+            const sessions = Math.round(Number(row.metricValues?.[0]?.value || '0'));
+            sessionsBySource[source] = sessions;
+          });
+        }
+        
+        // 3. Get page views breakdown
+        const pageResponse = await analyticsDataClient.properties.runReport({
+          auth: authClient,
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dimensions: [{ name: 'pageTitle' }],
+            metrics: [{ name: 'screenPageViews' }],
+            limit: 15
+          }
+        });
+        
+        if (pageResponse.data && pageResponse.data.rows) {
+          pageResponse.data.rows.forEach(row => {
+            const pageTitle = row.dimensionValues?.[0]?.value || 'unknown';
+            const views = Math.round(Number(row.metricValues?.[0]?.value || '0'));
+            viewsByPage[pageTitle] = views;
+          });
+        }
+        
+        // 4. Get country breakdown
+        const countryResponse = await analyticsDataClient.properties.runReport({
+          auth: authClient,
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+            dimensions: [{ name: 'country' }],
+            metrics: [{ name: 'totalUsers' }],
+            limit: 10
+          }
+        });
+        
+        if (countryResponse.data && countryResponse.data.rows) {
+          countryResponse.data.rows.forEach(row => {
+            const country = row.dimensionValues?.[0]?.value || 'unknown';
+            const users = Math.round(Number(row.metricValues?.[0]?.value || '0'));
+            
+            // Convert country names to country codes (simplified)
+            // In a real app, we'd use a proper mapping library
+            let countryCode = country.substring(0, 2).toUpperCase();
+            if (country === 'United States') countryCode = 'US';
+            if (country === 'United Kingdom') countryCode = 'GB';
+            
+            usersByCountry[countryCode] = users;
+          });
+        }
+      } catch (err) {
+        console.warn('Error fetching additional metrics:', err);
+      }
+      
       // Now let's fetch more specific dimension data for the other metrics
       // These require separate API calls because of the dimension combinations
       
