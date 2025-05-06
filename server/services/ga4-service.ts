@@ -86,7 +86,7 @@ export const ga4Service = {
         // More metrics for comprehensive analysis
         { name: 'eventCountPerUser' },
         { name: 'newUsers' },
-        { name: 'sessionDuration' }, // Use sessionDuration instead of duplicate activeUsers
+        // Removed invalid sessionDuration metric per GA4 API error
         { name: 'averageSessionDuration' } // Moved from primary metrics to stay under the 10 metric limit
         // Removed conversion/revenue related metrics per client request
       ];
@@ -273,7 +273,7 @@ export const ga4Service = {
             // In secondary metrics we now have:
             // [0] eventCountPerUser 
             // [1] newUsers
-            // [2] sessionDuration
+            // [2] averageSessionDuration
             newUsers += Number(row.metricValues?.[1]?.value || '0');
             eventCount += Number(row.metricValues?.[0]?.value || '0');
             // Extract from active users in the primary metrics instead
