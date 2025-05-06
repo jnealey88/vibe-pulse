@@ -46,33 +46,37 @@ export const ga4Service = {
   // Fetch key metrics from GA4
   fetchKeyMetrics: async (propertyId: string, authClient: any): Promise<GA4MetricsData> => {
     try {
+      // Define validated metrics supported by GA4
+      const validMetrics = [
+        // Core metrics for display
+        { name: 'totalUsers' },
+        { name: 'conversions' },
+        { name: 'bounceRate' },
+        { name: 'averageSessionDuration' },
+        
+        // Additional metrics for AI analysis
+        { name: 'sessionsPerUser' },
+        { name: 'engagedSessions' },
+        { name: 'screenPageViewsPerSession' },
+        { name: 'eventCount' },
+        // Removed invalid metric 'averageEventCount'
+        { name: 'userEngagementDuration' },
+        { name: 'engagementRate' },
+        { name: 'eventCountPerUser' },
+        { name: 'newUsers' },
+        { name: 'activeUsers' },
+        { name: 'totalRevenue' }, // May be 0 if not configured
+        { name: 'purchaseRevenue' }, // May be 0 if not configured
+        { name: 'transactions' } // May be 0 if not configured
+      ];
+
       // Current period data with expanded metrics
       const currentPeriodResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
-          metrics: [
-            // Core metrics for display
-            { name: 'totalUsers' },
-            { name: 'conversions' },
-            { name: 'bounceRate' },
-            { name: 'averageSessionDuration' },
-            
-            // Additional metrics for AI analysis
-            { name: 'sessionsPerUser' },
-            { name: 'engagedSessions' },
-            { name: 'screenPageViewsPerSession' },
-            { name: 'eventCount' },
-            { name: 'userEngagementDuration' },
-            { name: 'engagementRate' },
-            { name: 'eventCountPerUser' },
-            { name: 'newUsers' },
-            { name: 'activeUsers' },
-            { name: 'totalRevenue' }, // May be 0 if not configured
-            { name: 'purchaseRevenue' }, // May be 0 if not configured
-            { name: 'transactions' } // May be 0 if not configured
-          ],
+          metrics: validMetrics,
           // Add dimensions for more context
           dimensions: [
             { name: 'platform' },
@@ -81,34 +85,14 @@ export const ga4Service = {
         },
       });
 
-      // Previous period data for comparison (with same extended metrics)
+      // Previous period data for comparison (with same validated metrics)
       const previousPeriodResponse = await analyticsDataClient.properties.runReport({
         auth: authClient,
         property: `properties/${propertyId}`,
         requestBody: {
           dateRanges: [{ startDate: '14daysAgo', endDate: '8daysAgo' }],
-          metrics: [
-            // Core metrics for display
-            { name: 'totalUsers' },
-            { name: 'conversions' },
-            { name: 'bounceRate' },
-            { name: 'averageSessionDuration' },
-            
-            // Additional metrics for AI analysis (same as above)
-            { name: 'sessionsPerUser' },
-            { name: 'engagedSessions' },
-            { name: 'screenPageViewsPerSession' },
-            { name: 'eventCount' },
-            { name: 'userEngagementDuration' },
-            { name: 'engagementRate' },
-            { name: 'eventCountPerUser' },
-            { name: 'newUsers' },
-            { name: 'activeUsers' },
-            { name: 'totalRevenue' },
-            { name: 'purchaseRevenue' },
-            { name: 'transactions' }
-          ],
-          // Add dimensions for more context (same as above)
+          metrics: validMetrics,
+          // Add dimensions for more context
           dimensions: [
             { name: 'platform' },
             { name: 'deviceCategory' }
