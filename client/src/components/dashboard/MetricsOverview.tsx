@@ -122,7 +122,7 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
       <div>
         <h3 className="text-xl font-medium font-google-sans mb-4">Key Performance Metrics</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {coreMetricCards.map((card, index) => (
+          {coreMetricCards.map((card: any, index: number) => (
             <Card key={index} className="border border-border shadow-sm">
               <CardContent className="pt-5">
                 <div className="flex justify-between items-start mb-3">
@@ -149,7 +149,7 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
       <div>
         <h3 className="text-xl font-medium font-google-sans mb-4">User Activity Metrics</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {additionalMetricCards.map((card, index) => (
+          {additionalMetricCards.map((card: any, index: number) => (
             <Card key={index} className="border border-border shadow-sm">
               <CardContent className="pt-5">
                 <div className="flex justify-between items-start mb-3">
