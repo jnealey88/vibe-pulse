@@ -1,0 +1,75 @@
+The metric "dauPerMau" or "DAU / MAU" represents the ratio of Daily Active Users to Monthly Active Users. It's a key indicator of user engagement and "stickiness," showing what percentage of your monthly active users are also active on a daily basis. The result is expressed as a fraction (e.g., 0.113 for 11.3%).
+
+While the Google Analytics Data API (GA4) might not offer a direct metric named dauPerMau, you can easily calculate it by fetching the constituent metrics: Daily Active Users (DAU) and Monthly Active Users (MAU).
+
+Here's how to calculate dauPerMau using the Google Analytics Data API v1:
+
+1. Identify the Necessary Metrics:
+
+DAU (Daily Active Users): This is the number of unique users who engaged with your site or app on a specific day.
+You will use the API metric activeUsers. When you query for a single day, this metric effectively gives you the DAU for that day.
+MAU (Monthly Active Users): This is the number of unique users who engaged with your site or app within the last 30 days (as per your definition).
+You will use the API metric active30DayUsers. This metric provides the count of unique active users over the preceding 30-day period from the end date of your query. (Note: GA4 also commonly uses active28DayUsers. Ensure you use the metric that aligns with your definition of "Monthly").
+2. Construct Your API Request:
+
+To calculate DAU/MAU for a specific day, you need to fetch both activeUsers (for that day) and active30DayUsers (for the 30-day period ending on that day). You can often do this in a single API call.
+
+Conceptual API Request Body (JSON):
+
+JSON
+
+{
+  "property": "properties/YOUR_GA4_PROPERTY_ID",
+  "dateRanges": [
+    {
+      "startDate": "YYYY-MM-DD", // The specific day for which you want to calculate DAU/MAU
+      "endDate": "YYYY-MM-DD"    // This date serves as the DAU date and the end date of the MAU 30-day window
+    }
+  ],
+  "metrics": [
+    {
+      "name": "activeUsers"      // This will be your DAU
+    },
+    {
+      "name": "active30DayUsers" // This will be your MAU for the 30-day period ending on 'endDate'
+    }
+  ],
+  "dimensions": [
+    {
+      "name": "date" // Optional, but useful to confirm the date of the metrics
+    }
+  ]
+}
+3. Retrieve the Data and Perform the Calculation:
+
+From the API response, extract the value for activeUsers (this is your DAU).
+Extract the value for active30DayUsers (this is your MAU).
+Then, calculate the ratio:
+
+dauPerMau= 
+active30DayUsers (MAU)
+activeUsers (DAU)
+​
+ 
+
+Example:
+
+If on "2025-05-06":
+
+activeUsers = 500
+active30DayUsers = 5000 (meaning 5000 unique users were active in the period from 2025-04-07 to 2025-05-06)
+Then:
+dauPerMau= 
+5000
+500
+​
+ =0.10
+
+This means 10% of your 30-day active users were also active on May 6, 2025.
+
+Important Considerations:
+
+Metric Names: Always refer to the official Google Analytics Data API Dimensions and Metrics documentation for the most current metric names and their exact definitions. While active30DayUsers is used here based on your prompt, active28DayUsers is also a common metric for a 4-week period in GA4.
+Date Alignment: It's crucial that the MAU period correctly corresponds to the DAU date. Requesting both metrics with the same endDate in your API call ensures this alignment.
+Rolling Calculation: The dauPerMau is a rolling percentage. The value you calculate for a specific date reflects engagement up to that point.
+Interpretation: A higher dauPerMau ratio generally indicates better user retention and engagement, as a larger proportion of your monthly users are returning on a daily basis
