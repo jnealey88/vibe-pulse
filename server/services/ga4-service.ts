@@ -351,19 +351,28 @@ export const ga4Service = {
       // Now let's fetch more specific dimension data for the other metrics
       // These require separate API calls because of the dimension combinations
       
+      // Define variables to hold accurate metrics
+      let actualViewsCount = 0;
+      let actualEventCount = 0;
+      
       try {
-        // Get actual screenPageViews count
-        const viewsResponse = await analyticsDataClient.properties.runReport({
+        // Get actual screenPageViews count and accurate event count (no dimensions to avoid duplicates)
+        const metricsResponse = await analyticsDataClient.properties.runReport({
           auth: authClient,
           property: `properties/${propertyId}`,
           requestBody: {
             dateRanges: [{ startDate: currentStartDate, endDate: 'today' }],
-            metrics: [{ name: 'screenPageViews' }]
+            metrics: [
+              { name: 'screenPageViews' },
+              { name: 'eventCount' }
+            ]
           }
         });
         
-        if (viewsResponse.data && viewsResponse.data.rows && viewsResponse.data.rows.length > 0) {
-          formattedData.viewsCount = Math.round(Number(viewsResponse.data.rows[0].metricValues?.[0]?.value || '0'));
+        if (metricsResponse.data && metricsResponse.data.rows && metricsResponse.data.rows.length > 0) {
+          actualViewsCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[0]?.value || '0'));
+          actualEventCount = Math.round(Number(metricsResponse.data.rows[0].metricValues?.[1]?.value || '0'));
+          console.log(`Retrieved actual metrics: ${actualViewsCount} views, ${actualEventCount} events`);
         }
         
         console.log('Fetched comprehensive GA4 metrics for AI analysis');
@@ -402,10 +411,10 @@ export const ga4Service = {
         // Additional metrics for dashboard display
         activeUsers: Math.round(activeUsers), // Ensure integer
         newUsers: Math.round(newUsers), // Ensure integer
-        eventCount: Math.round(eventCount), // Ensure integer
+        eventCount: actualEventCount > 0 ? actualEventCount : Math.round(eventCount), // Use accurate value when available
         avgEngagementTime,
         // Use actual screenPageViews instead of calculated estimate
-        viewsCount: 0, // Will be filled in by a separate API call below
+        viewsCount: actualViewsCount > 0 ? actualViewsCount : 0,
         sessionsByChannel,
         sessionsBySource,
         viewsByPage,
