@@ -13,7 +13,7 @@ interface MetricsOverviewProps {
 const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
   if (isLoading) {
     return (
-      <div className="mb-8">
+      <div>
         <h3 className="text-xl font-medium font-google-sans mb-4">Website Activity Metrics</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -36,7 +36,7 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
 
   if (!metrics) {
     return (
-      <div className="mb-8">
+      <div>
         <h3 className="text-xl font-medium font-google-sans mb-4">Website Activity Metrics</h3>
         <Card>
           <CardContent className="py-8 text-center">
