@@ -274,7 +274,7 @@ export const openAiService = {
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
         temperature: 0.4, // Lower temperature for more precise analysis
-        max_tokens: 2000 // Ensure we have enough tokens for comprehensive report
+        max_tokens: 10000 // Ensure we have enough tokens for comprehensive report
       });
 
       const content = response.choices[0].message.content;

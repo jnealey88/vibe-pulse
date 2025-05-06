@@ -244,11 +244,11 @@ const Dashboard = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="md:ml-4 md:hidden"
+                    className="md:ml-4 md:hidden border-primary border-2 text-primary hover:bg-primary/10 font-medium"
                     onClick={() => generateInsightsMutation.mutate()}
                     disabled={generateInsightsMutation.isPending}
                   >
-                    <span className="material-icons text-sm mr-2">auto_awesome</span>
+                    <span className="material-icons text-sm mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
                     {generateInsightsMutation.isPending ? "Generating..." : "Generate Insights"}
                   </Button>
                 )}
@@ -259,11 +259,11 @@ const Dashboard = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="hidden md:flex"
+                    className="hidden md:flex border-primary border-2 text-primary hover:bg-primary/10 font-medium"
                     onClick={() => generateInsightsMutation.mutate()}
                     disabled={generateInsightsMutation.isPending}
                   >
-                    <span className="material-icons text-sm mr-2">auto_awesome</span>
+                    <span className="material-icons text-sm mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
                     {generateInsightsMutation.isPending ? "Generating..." : "Generate Insights"}
                   </Button>
                 )}
@@ -319,9 +319,10 @@ const Dashboard = () => {
                     <Button 
                       onClick={() => generateInsightsMutation.mutate()}
                       disabled={generateInsightsMutation.isPending}
+                      className="border-primary border text-white bg-primary hover:bg-primary/90 font-medium"
                     >
-                      <span className="material-icons mr-2">auto_awesome</span>
-                      Generate First Insights
+                      <span className="material-icons mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
+                      {generateInsightsMutation.isPending ? "Generating..." : "Generate First Insights"}
                     </Button>
                   )}
                 </CardContent>
@@ -333,10 +334,11 @@ const Dashboard = () => {
                 <Button 
                   variant="outline" 
                   onClick={handleLoadMoreInsights}
-                  className="border-border"
+                  className="border-primary border-2 text-primary hover:bg-primary/10 font-medium"
+                  disabled={generateInsightsMutation.isPending}
                 >
-                  <span className="material-icons mr-2">add</span>
-                  Load More Insights
+                  <span className="material-icons mr-2">{generateInsightsMutation.isPending ? "hourglass_empty" : "auto_awesome"}</span>
+                  {generateInsightsMutation.isPending ? "Generating..." : "Load More Insights"}
                 </Button>
               </div>
             )}
