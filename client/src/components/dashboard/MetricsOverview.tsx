@@ -62,6 +62,12 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
       iconColor: "text-green-500",
     },
     {
+      label: "Bounce Rate",
+      value: metrics.bounceRate || "0%",
+      icon: "sync_problem",
+      iconColor: "text-amber-500",
+    },
+    {
       label: "Event Count",
       value: metrics.eventCount ? metrics.eventCount.toLocaleString() : "0",
       icon: "touch_app",
@@ -179,7 +185,7 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
       {/* User Activity Metrics section */}
       <div>
         <h3 className="text-xl font-medium font-google-sans mb-4">Website Activity Metrics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
           {additionalMetricCards.map((card: any, index: number) => (
             <Card key={index} className="border border-border shadow-sm">
               <CardContent className="pt-5">
