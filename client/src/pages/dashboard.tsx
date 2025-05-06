@@ -63,16 +63,8 @@ const Dashboard = () => {
     refetch: refetchMetrics,
     error: metricsError,
   } = useQuery<Metric | null>({
-    queryKey: ['/api/websites', selectedWebsiteId, 'metrics'],
-    enabled: !!selectedWebsiteId,
-    onSettled: (data, error) => {
-      if (data) {
-        console.log("Metrics data received:", data);
-      }
-      if (error) {
-        console.error("Error fetching metrics:", error);
-      }
-    }
+    queryKey: [`/api/websites/${selectedWebsiteId}/metrics`],
+    enabled: !!selectedWebsiteId
   });
 
   // Fetch insights for selected website
@@ -81,7 +73,7 @@ const Dashboard = () => {
     isLoading: isLoadingInsights,
     refetch: refetchInsights,
   } = useQuery<any[]>({
-    queryKey: ['/api/websites', selectedWebsiteId, 'insights', filters.category, filters.impact],
+    queryKey: [`/api/websites/${selectedWebsiteId}/insights?category=${filters.category}&impact=${filters.impact}`],
     enabled: !!selectedWebsiteId,
   });
 
@@ -96,7 +88,7 @@ const Dashboard = () => {
         title: "Metrics synced",
         description: "Latest metrics have been fetched from Google Analytics 4",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/websites', selectedWebsiteId, 'metrics'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/websites/${selectedWebsiteId}/metrics`] });
     },
     onError: (error) => {
       toast({
@@ -118,7 +110,7 @@ const Dashboard = () => {
         title: "Insights generated",
         description: "New insights have been generated based on your data",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/websites', selectedWebsiteId, 'insights'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/websites/${selectedWebsiteId}/insights?category=${filters.category}&impact=${filters.impact}`] });
     },
     onError: (error) => {
       toast({
