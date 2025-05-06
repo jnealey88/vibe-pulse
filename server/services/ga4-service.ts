@@ -7,11 +7,12 @@ const analyticsAdminClient = google.analyticsadmin('v1beta');
 export interface GA4MetricsData {
   // Core metrics for UI display
   visitors: number;
-  conversions: number;
+  // Conversions data made optional per client request
+  conversions?: number;
   bounceRate: string;
   pageSpeed: string;
   visitorsChange: string;
-  conversionsChange: string;
+  conversionsChange?: string; // Made optional per client request
   bounceRateChange: string;
   pageSpeedChange: string;
   
@@ -64,7 +65,7 @@ export const ga4Service = {
       const primaryMetrics = [
         // Core metrics for display (these are essential)
         { name: 'totalUsers' },
-        { name: 'conversions' },
+        // Removed conversions metric per client request
         { name: 'bounceRate' },
         { name: 'averageSessionDuration' },
         
@@ -82,10 +83,8 @@ export const ga4Service = {
         // More metrics for comprehensive analysis
         { name: 'eventCountPerUser' },
         { name: 'newUsers' },
-        { name: 'activeUsers' },
-        { name: 'totalRevenue' }, // May be 0 if not configured
-        { name: 'purchaseRevenue' }, // May be 0 if not configured
-        { name: 'transactions' } // May be 0 if not configured
+        { name: 'activeUsers' }
+        // Removed conversion/revenue related metrics per client request
       ];
 
       console.log('Fetching first batch of GA4 metrics...');
@@ -447,7 +446,7 @@ export const ga4Service = {
       // First batch - core metrics only
       const coreMetrics = [
         { name: 'totalUsers' },
-        { name: 'conversions' },
+        // Removed conversions metric per client request
         { name: 'bounceRate' },
         { name: 'averageSessionDuration' }
       ];
@@ -496,8 +495,8 @@ export const ga4Service = {
           metrics: [
             { name: 'totalUsers' },
             { name: 'bounceRate' },
-            { name: 'averageSessionDuration' },
-            { name: 'conversions' }
+            { name: 'averageSessionDuration' }
+            // Removed conversions metric per client request
           ],
           limit: 10,
           orderBys: [
@@ -515,8 +514,8 @@ export const ga4Service = {
           dimensions: [{ name: 'sessionSource' }],
           metrics: [
             { name: 'totalUsers' },
-            { name: 'conversions' },
             { name: 'bounceRate' }
+            // Removed conversions metric per client request
           ],
           limit: 10,
           orderBys: [
@@ -541,9 +540,9 @@ export const ga4Service = {
           dateToDataMap.set(date, {
             date,
             visitors: Number(row.metricValues?.[0]?.value || '0'),
-            conversions: Number(row.metricValues?.[1]?.value || '0'),
-            bounceRate: `${Number(row.metricValues?.[2]?.value || '0').toFixed(1)}%`,
-            pageSpeed: `${Number(row.metricValues?.[3]?.value || '0').toFixed(1)}s`,
+            // Removed conversions per client request
+            bounceRate: `${Number(row.metricValues?.[1]?.value || '0').toFixed(1)}%`,
+            pageSpeed: `${Number(row.metricValues?.[2]?.value || '0').toFixed(1)}s`,
             // Initialize enhanced metrics with defaults
             sessionsPerUser: 0,
             engagedSessions: 0,
@@ -590,16 +589,16 @@ export const ga4Service = {
         page: row.dimensionValues?.[0].value,
         visitors: Number(row.metricValues?.[0].value || '0'),
         bounceRate: `${Number(row.metricValues?.[1].value || '0').toFixed(1)}%`,
-        avgSessionDuration: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}s`,
-        conversions: Number(row.metricValues?.[3].value || '0')
+        avgSessionDuration: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}s`
+        // Removed conversions per client request
       })) || [];
       
       // Format traffic source data
       const trafficSources = trafficSourceResponse.data.rows?.map(row => ({
         source: row.dimensionValues?.[0].value,
         visitors: Number(row.metricValues?.[0].value || '0'),
-        conversions: Number(row.metricValues?.[1].value || '0'),
-        bounceRate: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}%`,
+        bounceRate: `${Number(row.metricValues?.[1].value || '0').toFixed(1)}%`
+        // Removed conversions per client request
       })) || [];
       
       // Combine all data into a comprehensive historical dataset
@@ -639,11 +638,11 @@ export const ga4Service = {
       
       // Core metrics
       visitors: Math.round(metricsData.visitors), // Ensure integer
-      conversions: Math.round(metricsData.conversions), // Ensure integer
+      conversions: 0, // Set to 0 instead of using conversions data per client request
       bounceRate: metricsData.bounceRate,
       pageSpeed: metricsData.pageSpeed,
       visitorsChange: metricsData.visitorsChange,
-      conversionsChange: metricsData.conversionsChange,
+      conversionsChange: '0%', // Set to 0% per client request
       bounceRateChange: metricsData.bounceRateChange,
       pageSpeedChange: metricsData.pageSpeedChange,
       
