@@ -2,6 +2,8 @@ export interface Metric {
   id: number;
   websiteId: number;
   date: string;
+  
+  // Original core metrics
   visitors: number;
   conversions: number;
   bounceRate: string;
@@ -10,6 +12,19 @@ export interface Metric {
   conversionsChange: string;
   bounceRateChange: string;
   pageSpeedChange: string;
+  
+  // Additional metrics 
+  activeUsers?: number;
+  newUsers?: number;
+  eventCount?: number;
+  avgEngagementTime?: string;
+  viewsCount?: number;
+  sessionsByChannel?: Record<string, number>;
+  sessionsBySource?: Record<string, number>;
+  viewsByPage?: Record<string, number>;
+  usersByCountry?: Record<string, number>;
+  
+  // Metadata
   createdAt: string;
   updatedAt: string;
 }

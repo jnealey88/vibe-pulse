@@ -46,7 +46,8 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     );
   }
 
-  const metricCards = [
+  // First row - core metrics that include change indicators
+  const coreMetricCards = [
     {
       label: "Visitors",
       value: metrics.visitors ? metrics.visitors.toLocaleString() : "0",
@@ -76,37 +77,97 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
       iconColor: "text-primary",
     },
   ];
+  
+  // Second row - additional metrics requested by user
+  const additionalMetricCards = [
+    {
+      label: "Active Users",
+      value: metrics.activeUsers ? metrics.activeUsers.toLocaleString() : "0",
+      icon: "group",
+      iconColor: "text-blue-500",
+    },
+    {
+      label: "New Users",
+      value: metrics.newUsers ? metrics.newUsers.toLocaleString() : "0",
+      icon: "person_add",
+      iconColor: "text-green-500",
+    },
+    {
+      label: "Event Count",
+      value: metrics.eventCount ? metrics.eventCount.toLocaleString() : "0",
+      icon: "touch_app",
+      iconColor: "text-purple-500",
+    },
+    {
+      label: "Avg. Engagement",
+      value: metrics.avgEngagementTime || "0s",
+      icon: "timer",
+      iconColor: "text-orange-500",
+    },
+    {
+      label: "Views",
+      value: metrics.viewsCount ? metrics.viewsCount.toLocaleString() : "0",
+      icon: "visibility",
+      iconColor: "text-cyan-500",
+    },
+  ];
 
   const isTrendUp = (change: string) => {
     return change.includes('+');
   };
 
   return (
-    <div className="mb-8">
-      <h3 className="text-xl font-medium font-google-sans mb-4">Key Metrics</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metricCards.map((card, index) => (
-          <Card key={index} className="border border-border shadow-sm">
-            <CardContent className="pt-5">
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-muted-foreground font-google-sans">{card.label}</span>
-                <span className={`material-icons ${card.iconColor}`}>{card.icon}</span>
-              </div>
-              <div className="flex items-end gap-2">
-                <span className="text-3xl font-medium font-google-sans">{card.value}</span>
-                <span className={isTrendUp(card.change) ? "metric-trend-up" : "metric-trend-down"}>
-                  <span className="material-icons text-sm">
-                    {isTrendUp(card.change) ? "arrow_upward" : "arrow_downward"}
+    <div className="space-y-8">
+      {/* Core metrics section */}
+      <div>
+        <h3 className="text-xl font-medium font-google-sans mb-4">Key Performance Metrics</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {coreMetricCards.map((card, index) => (
+            <Card key={index} className="border border-border shadow-sm">
+              <CardContent className="pt-5">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-muted-foreground font-google-sans">{card.label}</span>
+                  <span className={`material-icons ${card.iconColor}`}>{card.icon}</span>
+                </div>
+                <div className="flex items-end gap-2">
+                  <span className="text-3xl font-medium font-google-sans">{card.value}</span>
+                  <span className={isTrendUp(card.change) ? "metric-trend-up" : "metric-trend-down"}>
+                    <span className="material-icons text-sm">
+                      {isTrendUp(card.change) ? "arrow_upward" : "arrow_downward"}
+                    </span>
+                    {card.change.replace('+', '')}
                   </span>
-                  {card.change.replace('+', '')}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">vs previous period</p>
-            </CardContent>
-          </Card>
-        ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">vs previous period</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
+
+      {/* Additional metrics section */}
+      <div>
+        <h3 className="text-xl font-medium font-google-sans mb-4">User Activity Metrics</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {additionalMetricCards.map((card, index) => (
+            <Card key={index} className="border border-border shadow-sm">
+              <CardContent className="pt-5">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-muted-foreground font-google-sans">{card.label}</span>
+                  <span className={`material-icons ${card.iconColor}`}>{card.icon}</span>
+                </div>
+                <div className="flex items-end gap-2">
+                  <span className="text-2xl font-medium font-google-sans">{card.value}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+      
+      {/* TODO: Add distribution charts section for channels, sources, pages, countries */}
+      {/* These will be charts built using the "sessionsByChannel", "sessionsBySource", */}
+      {/* "viewsByPage" and "usersByCountry" data */}
     </div>
   );
 };

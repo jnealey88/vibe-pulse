@@ -29,6 +29,8 @@ export const metrics = pgTable("metrics", {
   id: serial("id").primaryKey(),
   websiteId: integer("website_id").references(() => websites.id).notNull(),
   date: timestamp("date").notNull(),
+  
+  // Original core metrics
   visitors: integer("visitors").notNull(),
   conversions: integer("conversions").notNull(),
   bounceRate: text("bounce_rate").notNull(),
@@ -37,6 +39,19 @@ export const metrics = pgTable("metrics", {
   conversionsChange: text("conversions_change").notNull(),
   bounceRateChange: text("bounce_rate_change").notNull(),
   pageSpeedChange: text("page_speed_change").notNull(),
+  
+  // Additional metrics requested by user
+  activeUsers: integer("active_users").default(0),
+  newUsers: integer("new_users").default(0),
+  eventCount: integer("event_count").default(0),
+  avgEngagementTime: text("avg_engagement_time").default("0s"),
+  viewsCount: integer("views_count").default(0),
+  sessionsByChannel: jsonb("sessions_by_channel").default({}).notNull(),
+  sessionsBySource: jsonb("sessions_by_source").default({}).notNull(),
+  viewsByPage: jsonb("views_by_page").default({}).notNull(),
+  usersByCountry: jsonb("users_by_country").default({}).notNull(),
+  
+  // Metadata
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
