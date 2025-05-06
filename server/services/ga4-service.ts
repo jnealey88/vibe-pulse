@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import { Metric, InsertMetric } from '@shared/schema';
 
 const analyticsDataClient = google.analyticsdata('v1beta');
+const analyticsAdminClient = google.analyticsadmin('v1beta');
 
 export interface GA4MetricsData {
   visitors: number;
@@ -158,6 +159,80 @@ export const ga4Service = {
       pageSpeedChange: metricsData.pageSpeedChange,
     };
   },
+
+  // Fetch available GA4 properties from the user's Google account
+  fetchAvailableProperties: async (authClient: any) => {
+    try {
+      // First get the account list
+      const accountsResponse = await analyticsAdminClient.accounts.list({
+        auth: authClient
+      });
+      
+      const properties = [];
+      
+      // For each account, get the properties
+      if (accountsResponse.data.accounts && accountsResponse.data.accounts.length > 0) {
+        for (const account of accountsResponse.data.accounts) {
+          const propertiesResponse = await analyticsAdminClient.properties.list({
+            auth: authClient,
+            filter: `parent:${account.name}`
+          });
+          
+          if (propertiesResponse.data.properties && propertiesResponse.data.properties.length > 0) {
+            for (const property of propertiesResponse.data.properties) {
+              // Get the display name of the property
+              const accountName = account.displayName || 'Unknown Account';
+              const propertyName = property.displayName || 'Unnamed Property';
+              const propertyId = property.name?.split('/').pop() || '';
+              
+              // Get the website details
+              let domain = '';
+              if (property.dataStreams) {
+                for (const stream of property.dataStreams) {
+                  if (stream.webStreamData && stream.webStreamData.defaultUri) {
+                    domain = stream.webStreamData.defaultUri;
+                    break;
+                  }
+                }
+              } else {
+                // If dataStreams is not directly available, fetch them
+                const streamsResponse = await analyticsAdminClient.properties.dataStreams.list({
+                  auth: authClient,
+                  parent: property.name
+                });
+                
+                if (streamsResponse.data.dataStreams && streamsResponse.data.dataStreams.length > 0) {
+                  for (const stream of streamsResponse.data.dataStreams) {
+                    if (stream.webStreamData && stream.webStreamData.defaultUri) {
+                      domain = stream.webStreamData.defaultUri;
+                      break;
+                    }
+                  }
+                }
+              }
+              
+              // Clean up the domain
+              if (domain) {
+                domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+              }
+              
+              properties.push({
+                accountName,
+                propertyName,
+                propertyId,
+                domain
+              });
+            }
+          }
+        }
+      }
+      
+      return properties;
+    } catch (error: any) {
+      console.error('Error fetching GA4 properties:', error);
+      throw new Error(`Failed to fetch properties from Google Analytics: ${error.message}`);
+    }
+  }
 };
 
 export default ga4Service;

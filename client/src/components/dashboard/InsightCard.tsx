@@ -37,6 +37,10 @@ const InsightCard = ({ insight, onViewDetails }: InsightCardProps) => {
 
   // Parse recommendations from JSON string if needed
   const getRecommendations = () => {
+    if (!insight.recommendations) {
+      return [];
+    }
+    
     if (typeof insight.recommendations === "string") {
       try {
         return JSON.parse(insight.recommendations);
@@ -47,7 +51,7 @@ const InsightCard = ({ insight, onViewDetails }: InsightCardProps) => {
     return insight.recommendations;
   };
 
-  const recommendations = getRecommendations();
+  const recommendations = getRecommendations() || [];
   const impactColors = getImpactColor(insight.impact);
 
   return (
