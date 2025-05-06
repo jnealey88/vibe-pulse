@@ -19,6 +19,7 @@ export interface Metric {
   eventCount?: number;
   avgEngagementTime?: string;
   viewsCount?: number;
+  userStickiness?: string; // DAU/MAU ratio as percentage string
   sessionsByChannel?: Record<string, number>;
   sessionsBySource?: Record<string, number>;
   viewsByPage?: Record<string, number>;
