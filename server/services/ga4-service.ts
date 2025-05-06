@@ -436,28 +436,31 @@ export const ga4Service = {
       // For the average engagement time, we should use the averageSessionDuration from secondary metrics
       // instead of the userEngagementDuration which is the total duration (not per session)
       // Store raw seconds value (we'll format on frontend)
-      let engagementTimeToUse = '0';
       
-      // Scan through the secondary metrics data to find the averageSessionDuration
-      if (currentSecondaryData && currentSecondaryData.rows && currentSecondaryData.rows.length > 0) {
-        // The structure of secondary data has the averageSessionDuration at index 2
-        // We'll accumulate all values and then take the average
-        let totalSessionDuration = 0;
-        let rowCount = 0;
-        
-        currentSecondaryData.rows.forEach(row => {
-          if (row.metricValues?.[2]?.value) {
-            totalSessionDuration += Number(row.metricValues[2].value || '0');
-            rowCount++;
+      // We already have the averageSessionDuration from our secondary metrics processing (see around line 282)
+      // This value is stored in avgEngagementTime
+      // We'll use that directly if it's available, otherwise we can try to calculate from secondary data
+      
+      // If avgEngagementTime is still empty or '0', try to extract from secondaryMetrics directly
+      if (!avgEngagementTime || avgEngagementTime === '0') {
+        if (currentSecondaryData && currentSecondaryData.rows && currentSecondaryData.rows.length > 0) {
+          // Get the first row that has a valid averageSessionDuration
+          // In most cases, this will be all we need since it represents the average for the whole period
+          for (const row of currentSecondaryData.rows) {
+            if (row.metricValues?.[2]?.value) {
+              const durationSecs = Number(row.metricValues[2].value || '0');
+              if (durationSecs > 0) {
+                console.log(`Using direct averageSessionDuration from GA4: ${durationSecs} seconds`);
+                avgEngagementTime = durationSecs.toString();
+                break;
+              }
+            }
           }
-        });
-        
-        if (rowCount > 0) {
-          const avgSessionDurationSecs = Math.round(totalSessionDuration / rowCount);
-          console.log(`Calculated average session duration: ${avgSessionDurationSecs} seconds`);
-          engagementTimeToUse = avgSessionDurationSecs.toString();
         }
       }
+      
+      // Set the engagement time to use
+      let engagementTimeToUse = avgEngagementTime || '0';
       
       // Format data with additional AI analysis fields
       const formattedData: GA4MetricsData = {
