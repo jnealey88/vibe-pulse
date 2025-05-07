@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { InsightFilters } from "@/types/insight";
+import { InsightFilters, InsightImplementationPlan, Insight } from "@/types/insight";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import Sidebar from "@/components/layout/Sidebar";
@@ -10,11 +10,15 @@ import MetricsOverview from "@/components/dashboard/MetricsOverview";
 import WebsiteActivityMetrics from "@/components/dashboard/WebsiteActivityMetrics";
 import InsightCard from "@/components/dashboard/InsightCard";
 import InsightsFilter from "@/components/dashboard/InsightsFilter";
+import GenerateImplementationPlanModal from "@/components/dashboard/GenerateImplementationPlanModal";
+import ImplementationPlanDetail from "@/components/dashboard/ImplementationPlanDetail";
 
 import AddWebsiteModal from "@/components/dashboard/AddWebsiteModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlusCircle, ListChecks, Lightbulb } from "lucide-react";
 import ga4Service from "@/lib/ga4-service";
 import { Website, Metric } from "@/types/metric";
 
@@ -28,6 +32,9 @@ const Dashboard = () => {
   });
   const [insightPage, setInsightPage] = useState(1);
   const [isAddWebsiteModalOpen, setIsAddWebsiteModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("insights");
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<InsightImplementationPlan | null>(null);
   
   const { isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
@@ -77,12 +84,22 @@ const Dashboard = () => {
 
   // Fetch insights for selected website
   const {
-    data: insights = [] as any[],
+    data: insights = [] as Insight[],
     isLoading: isLoadingInsights,
     refetch: refetchInsights,
-  } = useQuery<any[]>({
+  } = useQuery<Insight[]>({
     queryKey: [`/api/websites/${selectedWebsiteId}/insights?category=${filters.category}&impact=${filters.impact}`],
     enabled: !!selectedWebsiteId,
+  });
+  
+  // Fetch implementation plans for selected website
+  const {
+    data: implementationPlans = [] as InsightImplementationPlan[],
+    isLoading: isLoadingPlans,
+    refetch: refetchPlans,
+  } = useQuery<InsightImplementationPlan[]>({
+    queryKey: [`/api/websites/${selectedWebsiteId}/implementation-plans`],
+    enabled: !!selectedWebsiteId && activeTab === 'plans',
   });
 
   // Sync metrics mutation
@@ -129,6 +146,53 @@ const Dashboard = () => {
       });
     },
   });
+  
+  // Generate implementation plan mutation
+  const generateImplementationPlanMutation = useMutation({
+    mutationFn: async (insightIds: number[]) => {
+      if (!selectedWebsiteId) return null;
+      return await ga4Service.generateImplementationPlan(parseInt(selectedWebsiteId), insightIds);
+    },
+    onSuccess: (data) => {
+      if (data) {
+        toast({
+          title: "Implementation plan generated",
+          description: "Your plan has been created successfully",
+        });
+        queryClient.invalidateQueries({ queryKey: [`/api/websites/${selectedWebsiteId}/implementation-plans`] });
+        setSelectedPlan(data);
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Plan generation failed",
+        description: error instanceof Error ? error.message : "Failed to generate implementation plan",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Delete implementation plan mutation
+  const deleteImplementationPlanMutation = useMutation({
+    mutationFn: async (planId: number) => {
+      return await ga4Service.deleteImplementationPlan(planId);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Plan deleted",
+        description: "Implementation plan has been deleted successfully",
+      });
+      setSelectedPlan(null);
+      queryClient.invalidateQueries({ queryKey: [`/api/websites/${selectedWebsiteId}/implementation-plans`] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Deletion failed",
+        description: error instanceof Error ? error.message : "Failed to delete implementation plan",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleWebsiteChange = (websiteId: string) => {
     setSelectedWebsiteId(websiteId);
@@ -165,6 +229,37 @@ const Dashboard = () => {
         variant: "destructive",
       });
     }
+  };
+  
+  const handleOpenPlanModal = () => {
+    if (insights.length === 0) {
+      toast({
+        title: "No insights available",
+        description: "Generate insights first to create an implementation plan",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsPlanModalOpen(true);
+  };
+
+  const handleClosePlanModal = () => {
+    setIsPlanModalOpen(false);
+  };
+
+  const handlePlanGenerated = (plan: InsightImplementationPlan) => {
+    setActiveTab("plans");
+    setSelectedPlan(plan);
+  };
+
+  const handleDeletePlan = (planId: number) => {
+    if (confirm("Are you sure you want to delete this implementation plan?")) {
+      deleteImplementationPlanMutation.mutate(planId);
+    }
+  };
+
+  const handleBackFromPlan = () => {
+    setSelectedPlan(null);
   };
 
   const selectedWebsite = websites?.find(
@@ -362,10 +457,133 @@ const Dashboard = () => {
             />
           </div>
           
-          {/* Add Website Modal */}
+          {/* Implementation Plans Section */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold font-google-sans text-foreground">Implementation Plans</h3>
+              {selectedWebsite && insights.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-primary border-2 text-primary hover:bg-primary/10 font-medium"
+                  onClick={handleOpenPlanModal}
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Create Implementation Plan
+                </Button>
+              )}
+            </div>
+            
+            {selectedPlan ? (
+              <ImplementationPlanDetail 
+                plan={selectedPlan}
+                onBack={handleBackFromPlan}
+              />
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="insights">
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    Insights
+                  </TabsTrigger>
+                  <TabsTrigger value="plans">
+                    <ListChecks className="h-4 w-4 mr-2" />
+                    Implementation Plans
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="insights" className="space-y-4">
+                  {/* This tab's content is handled above */}
+                </TabsContent>
+                
+                <TabsContent value="plans" className="space-y-4">
+                  {isLoadingPlans ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[1, 2].map((i) => (
+                        <Card key={i} className="p-4">
+                          <Skeleton className="h-8 w-3/4 mb-3" />
+                          <Skeleton className="h-4 w-full mb-2" />
+                          <Skeleton className="h-4 w-full mb-2" />
+                          <Skeleton className="h-4 w-3/4" />
+                        </Card>
+                      ))}
+                    </div>
+                  ) : implementationPlans.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {implementationPlans.map((plan) => (
+                        <Card key={plan.id} className="overflow-hidden">
+                          <CardContent className="p-6">
+                            <h4 className="text-lg font-medium mb-2 font-google-sans">{plan.title}</h4>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                              {plan.summary.length > 120 
+                                ? `${plan.summary.substring(0, 120)}...` 
+                                : plan.summary}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              <Badge variant="outline" className="bg-primary/10">
+                                {plan.steps.length} Steps
+                              </Badge>
+                              <Badge variant="outline" className="bg-primary/10">
+                                {new Date(plan.createdAt).toLocaleDateString()}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setSelectedPlan(plan)}
+                              >
+                                View Plan
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleDeletePlan(plan.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <ListChecks className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <h4 className="text-lg font-google-sans font-medium mb-2">No Implementation Plans</h4>
+                        <p className="text-muted-foreground mb-6">
+                          Create your first implementation plan to organize insights into actionable steps
+                        </p>
+                        {insights.length > 0 && (
+                          <Button 
+                            onClick={handleOpenPlanModal}
+                            className="border-primary border text-white bg-primary hover:bg-primary/90 font-medium"
+                          >
+                            <PlusCircle className="h-4 w-4 mr-2" />
+                            Create First Implementation Plan
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+          
+          {/* Modals */}
           <AddWebsiteModal 
             isOpen={isAddWebsiteModalOpen} 
             onClose={() => setIsAddWebsiteModalOpen(false)} 
+          />
+          
+          <GenerateImplementationPlanModal
+            isOpen={isPlanModalOpen}
+            onClose={handleClosePlanModal}
+            websiteId={selectedWebsiteId ? parseInt(selectedWebsiteId) : 0}
+            insights={insights}
+            onPlanGenerated={handlePlanGenerated}
           />
         </main>
       </div>
