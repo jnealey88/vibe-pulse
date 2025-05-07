@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS implementation_plans (
+  id SERIAL PRIMARY KEY,
+  website_id INTEGER NOT NULL REFERENCES websites(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  insight_ids JSONB NOT NULL,
+  steps JSONB NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
