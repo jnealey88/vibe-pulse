@@ -33,6 +33,94 @@ export interface GeneratedImplementationPlan {
 }
 
 export const openAiService = {
+  // Generate a summary of insights
+  generateInsightsSummary: async (
+    insights: Insight[],
+    metrics: Metric | null,
+    websiteDomain: string
+  ): Promise<{ summary: string }> => {
+    try {
+      // Count insights by category
+      const categoryCounts: Record<string, number> = {};
+      insights.forEach(insight => {
+        if (!categoryCounts[insight.category]) {
+          categoryCounts[insight.category] = 0;
+        }
+        categoryCounts[insight.category]++;
+      });
+      
+      // Count insights by impact
+      const impactCounts: Record<string, number> = {};
+      insights.forEach(insight => {
+        if (!impactCounts[insight.impact]) {
+          impactCounts[insight.impact] = 0;
+        }
+        impactCounts[insight.impact]++;
+      });
+
+      const prompt = `
+        I need you to analyze a collection of insights for the website "${websiteDomain}" and generate a concise, easy-to-understand summary.
+        
+        INSIGHTS OVERVIEW:
+        - Total number of insights: ${insights.length}
+        
+        INSIGHTS BY CATEGORY:
+        ${Object.entries(categoryCounts)
+          .map(([category, count]) => `- ${category}: ${count} insights`)
+          .join('\n')}
+        
+        INSIGHTS BY IMPACT:
+        ${Object.entries(impactCounts)
+          .map(([impact, count]) => `- ${impact} Impact: ${count} insights`)
+          .join('\n')}
+        
+        DETAILED INSIGHTS:
+        ${insights.map((insight, index) => `
+        INSIGHT ${index + 1}: ${insight.title}
+        - Category: ${insight.category}
+        - Impact: ${insight.impact}
+        - Description: ${insight.description}
+        `).join('\n')}
+        
+        ${metrics ? `
+        CURRENT WEBSITE METRICS:
+        - Visitors: ${metrics.visitors} (${metrics.visitorsChange} change)
+        - Bounce Rate: ${metrics.bounceRate} (${metrics.bounceRateChange} change)
+        - Active Users: ${metrics.activeUsers || 0}
+        - New Users: ${metrics.newUsers || 0}
+        - Avg Engagement Time: ${metrics.avgEngagementTime || "N/A"}
+        ` : ''}
+        
+        Based on this information, generate an executive summary (200-250 words) that:
+        1. Identifies the main themes or patterns across the insights
+        2. Highlights the most critical insights (high impact ones)
+        3. Provides an overall assessment of the website's performance
+        4. Uses simple, non-technical language that any business owner could understand
+        5. Points out the most promising opportunities for improvement
+        
+        Respond in first person as if you're directly addressing the website owner.
+        Return just the summary text without any additional formatting, headers, or metadata.
+      `;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.5,
+        max_tokens: 500
+      });
+
+      const content = response.choices[0].message.content;
+      if (!content) {
+        throw new Error("Empty response from OpenAI");
+      }
+
+      return { summary: content };
+    } catch (error: unknown) {
+      console.error("Error generating insights summary with OpenAI:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Failed to generate insights summary: ${errorMessage}`);
+    }
+  },
   // Generate insights based on comprehensive metrics data
   generateInsights: async (
     currentMetrics: Metric,

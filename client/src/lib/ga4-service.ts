@@ -1,6 +1,6 @@
 import { apiRequest } from '@/lib/queryClient';
 import { Metric, Website } from '@/types/metric';
-import { Insight, InsightImplementationPlan } from '@/types/insight';
+import { Insight, InsightImplementationPlan, InsightsSummaryResponse } from '@/types/insight';
 
 export const ga4Service = {
   getWebsites: async (): Promise<Website[]> => {
@@ -124,6 +124,15 @@ export const ga4Service = {
       console.error('Error parsing JSON response:', error);
       return { message: 'Implementation plan deleted, but response parsing failed' };
     }
+  },
+  
+  // Generate a summary of insights
+  generateInsightsSummary: async (websiteId: number, insights: Insight[], metrics: Metric | null): Promise<InsightsSummaryResponse> => {
+    const response = await apiRequest('POST', `/api/websites/${websiteId}/insights/summary`, { 
+      insights, 
+      metrics 
+    });
+    return response.json();
   }
 };
 

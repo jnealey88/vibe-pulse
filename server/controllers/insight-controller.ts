@@ -5,6 +5,41 @@ import { openAiService } from '../services/openai-service';
 import { insightInsertSchema, reportInsertSchema } from '@shared/schema';
 
 export const insightController = {
+  // Generate a summary of insights
+  generateInsightsSummary: async (req: Request, res: Response) => {
+    try {
+      const { websiteId } = req.params;
+      const { insights, metrics } = req.body;
+      const parsedWebsiteId = parseInt(websiteId);
+
+      if (isNaN(parsedWebsiteId)) {
+        return res.status(400).json({ message: 'Invalid website ID' });
+      }
+
+      if (!Array.isArray(insights) || insights.length === 0) {
+        return res.status(400).json({ message: 'No insights provided' });
+      }
+
+      const website = await storage.getWebsiteById(parsedWebsiteId);
+      
+      if (!website) {
+        return res.status(404).json({ message: 'Website not found' });
+      }
+      
+      if (website.userId !== req.session.userId) {
+        return res.status(403).json({ message: 'Not authorized to access this website' });
+      }
+
+      // Generate summary using OpenAI
+      const summary = await openAiService.generateInsightsSummary(insights, metrics, website.domain);
+      return res.json(summary);
+    } catch (error: unknown) {
+      console.error('Error generating insights summary:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      return res.status(500).json({ message: `Failed to generate insights summary: ${errorMessage}` });
+    }
+  },
+
   // Get insights for a website
   getInsights: async (req: Request, res: Response) => {
     try {

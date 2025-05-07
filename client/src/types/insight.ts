@@ -48,6 +48,10 @@ export interface ReportResponse {
   nextSteps: string[];
 }
 
+export interface InsightsSummaryResponse {
+  summary: string;
+}
+
 export interface InsightImplementationStep {
   stepNumber: number;
   title: string;

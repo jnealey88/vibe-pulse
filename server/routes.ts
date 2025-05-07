@@ -71,6 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Insights routes
   app.get(`${apiPrefix}/websites/:websiteId/insights`, authenticate, insightController.getInsights);
   app.post(`${apiPrefix}/websites/:websiteId/insights/generate`, authenticate, insightController.generateInsights);
+  app.post(`${apiPrefix}/websites/:websiteId/insights/summary`, authenticate, insightController.generateInsightsSummary);
 
   // Reports routes
   app.post(`${apiPrefix}/websites/:websiteId/reports`, authenticate, insightController.generateReport);
