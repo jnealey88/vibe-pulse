@@ -367,10 +367,10 @@ export const openAiService = {
               "priority": "High/Medium/Low",
               "effort": "Easy/Medium/Difficult",
               "estimatedTime": "Estimated completion time (e.g., '1-2 hours', '1 day')",
-              "dependencies": [Optional array of step numbers that must be completed first],
-              "resources": [Optional array of resources, tools or references]
-            },
-            ...additional steps
+              "dependencies": [], // Optional array of step numbers that must be completed first
+              "resources": [] // Optional array of resources, tools or references
+            }
+            // ...additional steps
           ]
         }
         
