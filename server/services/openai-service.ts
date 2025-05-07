@@ -95,23 +95,20 @@ export const openAiService = {
         ` : ''}
         
         SUMMARY REQUIREMENTS:
-        1. Create a SINGLE PARAGRAPH summary that concisely captures the most important insights
-        2. Start with a clear, attention-grabbing statement about the website's performance
-        3. Mention the high-impact issues that require immediate attention
-        4. Include 2-3 key themes or patterns from the insights (traffic patterns, user engagement, content quality, etc.)
-        5. Provide brief, actionable recommendations without going into excessive detail
-        6. End with a positive, forward-looking statement about improvement opportunities
+        1. Create an EXTREMELY SIMPLE, client-friendly summary (3-4 sentences only)
+        2. Focus on the #1 most important finding about website performance
+        3. Mention only 1-2 specific action steps that will have the biggest impact
+        4. Use extremely plain language (as if speaking to someone with no technical background)
         
         GUIDELINES FOR TONE AND STYLE:
-        - Write in a professional but conversational tone
-        - Use no more than 150-200 words total for the entire summary
-        - Focus on business outcomes rather than technical details
-        - Address the client directly as if you're presenting findings to a business owner
-        - Use simple, clear language that explains the "why" behind each insight
-        - Balance identifying problems with highlighting opportunities
-        - Connect the insights together into a cohesive narrative
+        - Write as if explaining to a non-technical business owner who has limited time
+        - Use no more than 50-75 words total
+        - Use only simple, everyday language (avoid marketing jargon and technical terms)
+        - Focus on the "so what" - why the client should care about the findings
+        - Be specific about the 1-2 actions that will make the biggest difference
+        - Keep sentences short and direct
         
-        Return ONLY the executive summary text as a SINGLE PARAGRAPH. No introductions, headings, sign-offs, or paragraph breaks.
+        Return ONLY the executive summary as a single tiny paragraph with no more than 4 short sentences total.
       `;
 
       const response = await openai.chat.completions.create({

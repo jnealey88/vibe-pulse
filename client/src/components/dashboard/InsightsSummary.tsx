@@ -103,12 +103,12 @@ const InsightsSummary = ({
   const highImpactCount = insightsByImpact['High']?.length || 0;
 
   return (
-    <Card className="mb-4 border-2 border-primary/20 shadow-md">
-      <CardHeader className="pb-3">
+    <Card className="mb-4 border-0 shadow-sm">
+      <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <MessageSquareQuote className="h-5 w-5 mr-2 text-primary" />
-            <CardTitle>Executive Insights Summary</CardTitle>
+            <CardTitle>Client-Friendly Summary</CardTitle>
           </div>
           <Button 
             variant="outline" 
@@ -125,34 +125,26 @@ const InsightsSummary = ({
             ) : (
               <>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {summary ? 'Refresh Summary' : 'Generate Summary'}
+                {summary ? 'Refresh' : 'Generate Summary'}
               </>
             )}
           </Button>
         </div>
-        <CardDescription>
-          AI-powered analysis of {insights.length} insights across {Object.keys(insightsByCategory).length} categories
-        </CardDescription>
       </CardHeader>
       
-      <CardContent>
-        {highImpactCount > 0 && (
-          <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md mb-4 flex items-start">
-            <AlertTriangle className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 mr-2 flex-shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-300">
-              <span className="font-medium">Attention required:</span> {highImpactCount} high-impact 
-              {highImpactCount === 1 ? ' issue has' : ' issues have'} been identified that need immediate attention.
-            </p>
+      <CardContent className="pt-4">
+        {highImpactCount > 0 && summary && (
+          <div className="mb-2 flex justify-end">
+            <Badge variant="outline" className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              {highImpactCount} high-priority {highImpactCount === 1 ? 'issue' : 'issues'}
+            </Badge>
           </div>
         )}
 
         {summary ? (
-          <div className="mb-5 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center mb-2">
-              <LineChart className="h-4 w-4 mr-2 text-primary" />
-              <h4 className="font-medium text-sm text-primary">SUMMARY ANALYSIS</h4>
-            </div>
-            <div className="text-base leading-relaxed text-gray-700 dark:text-gray-200 font-light">
+          <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 mb-5 border-l-4 border-primary">
+            <div className="text-lg md:text-xl leading-relaxed text-gray-700 dark:text-gray-100 font-medium">
               <p>{summary}</p>
             </div>
           </div>
@@ -160,51 +152,34 @@ const InsightsSummary = ({
           <div className="flex items-center justify-center p-6 border border-dashed rounded-md mb-5 bg-gray-50 dark:bg-gray-800/50">
             <Lightbulb className="h-5 w-5 mr-2 text-primary" />
             <p className="text-muted-foreground">
-              Generate an AI summary to get a clear, client-ready analysis of all insights.
+              Generate a simple summary for your client.
             </p>
           </div>
         )}
         
-        <Separator className="my-4" />
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          {/* Categories breakdown */}
-          <div className="bg-gray-50 dark:bg-gray-800/30 rounded-md p-4">
-            <div className="flex items-center mb-3">
-              <BarChart3 className="h-4 w-4 mr-2 text-primary" />
-              <h4 className="font-medium text-sm">INSIGHTS BY CATEGORY</h4>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(insightsByCategory)
-                .sort(([,a], [,b]) => b.length - a.length) // Sort by count, descending
-                .map(([category, categoryInsights]) => (
-                  <Badge key={category} variant="outline" className="bg-primary/10 text-xs">
-                    {category}: {categoryInsights.length}
-                  </Badge>
-              ))}
-            </div>
+        {summary && (
+          <div className="mt-3 mb-1 flex flex-wrap gap-2 justify-center">
+            {Object.entries(insightsByCategory)
+              .sort(([,a], [,b]) => b.length - a.length) // Sort by count, descending
+              .slice(0, 3) // Show only top 3 categories
+              .map(([category, categoryInsights]) => (
+                <Badge key={category} variant="outline" className="bg-primary/5 text-xs">
+                  {category}: {categoryInsights.length}
+                </Badge>
+            ))}
+            
+            {/* Show only High and Medium impacts if they exist */}
+            {['High', 'Medium'].map(impact => {
+              const count = insightsByImpact[impact]?.length || 0;
+              if (count === 0) return null;
+              return (
+                <Badge key={impact} className={`${getImpactColor(impact)} text-xs`}>
+                  {impact} priority: {count}
+                </Badge>
+              );
+            })}
           </div>
-
-          {/* Impact breakdown */}
-          <div className="bg-gray-50 dark:bg-gray-800/30 rounded-md p-4">
-            <div className="flex items-center mb-3">
-              <TrendingUp className="h-4 w-4 mr-2 text-primary" />
-              <h4 className="font-medium text-sm">INSIGHTS BY PRIORITY</h4>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {/* Always show impacts in order of High, Medium, Low */}
-              {['High', 'Medium', 'Low'].map(impact => {
-                const count = insightsByImpact[impact]?.length || 0;
-                if (count === 0) return null;
-                return (
-                  <Badge key={impact} className={`${getImpactColor(impact)} text-xs`}>
-                    {impact}: {count}
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
