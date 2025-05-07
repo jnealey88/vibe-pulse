@@ -73,7 +73,6 @@ export const openAiService = {
         - Bounce Rate: ${currentMetrics.bounceRate} (${currentMetrics.bounceRateChange} change)
         - Active Users: ${currentMetrics.activeUsers || 0}
         - New Users: ${currentMetrics.newUsers || 0}
-        - User Stickiness (DAU/MAU): ${currentMetrics.userStickiness || "N/A"} 
         - Event Count: ${currentMetrics.eventCount || 0}
         - Average Engagement Time: ${currentMetrics.avgEngagementTime || "N/A"}
         - Page Views: ${currentMetrics.viewsCount || 0}
@@ -238,7 +237,6 @@ export const openAiService = {
         - Bounce Rate: ${metrics.bounceRate} (${metrics.bounceRateChange} change)
         - Active Users: ${metrics.activeUsers || 0}
         - New Users: ${metrics.newUsers || 0}
-        - User Stickiness (DAU/MAU): ${metrics.userStickiness || "N/A"}
         - Event Count: ${metrics.eventCount || 0}
         - Average Engagement Time: ${metrics.avgEngagementTime || "N/A"}
         ${deviceSection}
