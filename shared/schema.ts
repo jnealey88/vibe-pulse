@@ -82,6 +82,17 @@ export const reports = pgTable("reports", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const implementationPlans = pgTable("implementation_plans", {
+  id: serial("id").primaryKey(),
+  websiteId: integer("website_id").references(() => websites.id).notNull(),
+  title: text("title").notNull(),
+  summary: text("summary").notNull(),
+  insightIds: jsonb("insight_ids").notNull(), // Array of insight IDs
+  steps: jsonb("steps").notNull(), // Array of implementation steps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   websites: many(websites),
@@ -93,6 +104,7 @@ export const websitesRelations = relations(websites, ({ one, many }) => ({
   metrics: many(metrics),
   insights: many(insights),
   reports: many(reports),
+  implementationPlans: many(implementationPlans),
 }));
 
 export const metricsRelations = relations(metrics, ({ one }) => ({

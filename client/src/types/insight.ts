@@ -47,3 +47,25 @@ export interface ReportResponse {
   recommendations: string[];
   nextSteps: string[];
 }
+
+export interface InsightImplementationStep {
+  stepNumber: number;
+  title: string;
+  description: string;
+  priority: 'High' | 'Medium' | 'Low';
+  effort: 'Easy' | 'Medium' | 'Difficult';
+  estimatedTime: string;  // e.g., "1-2 hours", "2-3 days", etc.
+  dependencies?: number[]; // IDs of steps that must be completed before this one
+  resources?: string[];    // Links or resources needed for this step
+}
+
+export interface InsightImplementationPlan {
+  id: number; 
+  websiteId: number;
+  title: string;
+  summary: string;
+  insightIds: number[];    // IDs of insights included in this plan
+  steps: InsightImplementationStep[];
+  createdAt: string;
+  updatedAt: string;
+}
