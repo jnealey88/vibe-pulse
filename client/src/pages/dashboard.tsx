@@ -7,6 +7,7 @@ import { useLocation } from "wouter";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import MetricsOverview from "@/components/dashboard/MetricsOverview";
+import WebsiteActivityMetrics from "@/components/dashboard/WebsiteActivityMetrics";
 import InsightCard from "@/components/dashboard/InsightCard";
 import InsightsFilter from "@/components/dashboard/InsightsFilter";
 
@@ -236,16 +237,16 @@ const Dashboard = () => {
             </Card>
           )}
           
-          {/* Metrics Overview */}
-          <div>
-            <MetricsOverview 
-              metrics={metrics || null} 
-              isLoading={isLoadingMetrics || syncMetricsMutation.isPending} 
+          {/* Website Activity Metrics - Just the cards with data */}
+          <div className="mb-8">
+            <WebsiteActivityMetrics
+              metrics={metrics || null}
+              isLoading={isLoadingMetrics || syncMetricsMutation.isPending}
             />
           </div>
           
-          {/* Remove the placeholder from MetricsOverview component */}
-          <div className="mb-8 -mt-4">
+          {/* Smart Insights - Right below Website Activity Metrics cards */}
+          <div className="mb-8">
             <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
               <div className="flex items-center justify-between w-full md:w-auto">
                 <h3 className="text-xl font-semibold font-google-sans text-foreground mb-0">Smart Insights</h3>
@@ -351,6 +352,14 @@ const Dashboard = () => {
                 </Button>
               </div>
             )}
+          </div>
+          
+          {/* Additional metrics overview - will show after Smart Insights */}
+          <div className="mb-8">
+            <MetricsOverview 
+              metrics={metrics || null} 
+              isLoading={isLoadingMetrics || syncMetricsMutation.isPending} 
+            />
           </div>
           
           {/* Add Website Modal */}

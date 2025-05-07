@@ -14,9 +14,9 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
   if (isLoading) {
     return (
       <div>
-        <h3 className="text-xl font-medium font-google-sans mb-4">Website Activity Metrics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {[1, 2, 3, 4, 5].map((i) => (
+        <h3 className="text-xl font-medium font-google-sans mb-4">Performance Metrics</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2].map((i) => (
             <Card key={i}>
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-3">
@@ -37,7 +37,7 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
   if (!metrics) {
     return (
       <div>
-        <h3 className="text-xl font-medium font-google-sans mb-4">Website Activity Metrics</h3>
+        <h3 className="text-xl font-medium font-google-sans mb-4">Performance Metrics</h3>
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">No metrics data available. Try syncing with Google Analytics.</p>
@@ -46,46 +46,6 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
       </div>
     );
   }
-
-  // Second row - additional metrics requested by user
-  const additionalMetricCards = [
-    {
-      label: "Active Users",
-      value: metrics.activeUsers ? metrics.activeUsers.toLocaleString() : "-",
-      icon: "group",
-      iconColor: "text-blue-500",
-    },
-    {
-      label: "New Users",
-      value: metrics.newUsers ? metrics.newUsers.toLocaleString() : "-",
-      icon: "person_add",
-      iconColor: "text-green-500",
-    },
-    {
-      label: "Bounce Rate",
-      value: metrics.bounceRate || "-", 
-      icon: "sync_problem",
-      iconColor: "text-amber-500",
-    },
-    {
-      label: "Event Count",
-      value: metrics.eventCount ? metrics.eventCount.toLocaleString() : "-",
-      icon: "touch_app",
-      iconColor: "text-purple-500",
-    },
-    {
-      label: "Avg. Engagement",
-      value: metrics.avgEngagementTime ? formatEngagementTime(metrics.avgEngagementTime) : "-",
-      icon: "timer",
-      iconColor: "text-orange-500",
-    },
-    {
-      label: "Views",
-      value: metrics.viewsCount ? metrics.viewsCount.toLocaleString() : "-",
-      icon: "visibility",
-      iconColor: "text-cyan-500",
-    },
-  ];
   
   // Prepare data for distribution charts
   
@@ -115,26 +75,6 @@ const MetricsOverview = ({ metrics, isLoading }: MetricsOverviewProps) => {
     
   return (
     <div className="space-y-8">
-      {/* User Activity Metrics section */}
-      <div>
-        <h3 className="text-xl font-medium font-google-sans mb-4">Website Activity Metrics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-          {additionalMetricCards.map((card: any, index: number) => (
-            <Card key={index} className="border border-border shadow-sm">
-              <CardContent className="pt-5">
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-muted-foreground font-google-sans">{card.label}</span>
-                  <span className={`material-icons ${card.iconColor}`}>{card.icon}</span>
-                </div>
-                <div className="flex items-end gap-2">
-                  <span className="text-2xl font-medium font-google-sans">{card.value}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-      
       {/* Traffic Sources Section */}
       <div>
         <h3 className="text-xl font-medium font-google-sans mb-4">Traffic Sources</h3>
