@@ -59,7 +59,10 @@ export const openAiService = {
       });
 
       const prompt = `
-        I need you to analyze a collection of insights for the website "${websiteDomain}" and generate a concise, easy-to-understand summary.
+        I need you to analyze a collection of website insights and metrics for "${websiteDomain}" and generate a client-friendly executive summary that's easy to read and understand.
+        
+        YOUR TASK:
+        Create a clear, professional executive summary of the website's performance insights that a web designer could confidently present to their client. The summary should be well-structured, use straightforward business language, and highlight actionable findings.
         
         INSIGHTS OVERVIEW:
         - Total number of insights: ${insights.length}
@@ -91,15 +94,25 @@ export const openAiService = {
         - Avg Engagement Time: ${metrics.avgEngagementTime || "N/A"}
         ` : ''}
         
-        Based on this information, generate an executive summary (200-250 words) that:
-        1. Identifies the main themes or patterns across the insights
-        2. Highlights the most critical insights (high impact ones)
-        3. Provides an overall assessment of the website's performance
-        4. Uses simple, non-technical language that any business owner could understand
-        5. Points out the most promising opportunities for improvement
+        SUMMARY REQUIREMENTS:
+        1. Start with a clear, concise overview sentence that frames the analysis
+        2. Group related insights into 2-3 key themes or patterns (traffic patterns, user engagement, content quality, etc.)
+        3. Clearly identify the high-impact issues that require immediate attention
+        4. Provide specific, actionable next steps for each major finding
+        5. Use professional, client-friendly language (no technical jargon)
+        6. Format your response with proper paragraphs (2-3 paragraphs total) for easier reading
+        7. Include a brief, forward-looking conclusion with a positive tone
         
-        Respond in first person as if you're directly addressing the website owner.
-        Return just the summary text without any additional formatting, headers, or metadata.
+        GUIDELINES FOR TONE AND STYLE:
+        - Write in a professional but conversational tone
+        - Use clear section breaks between paragraphs
+        - Limit each paragraph to 3-5 sentences
+        - Focus on business outcomes rather than technical details
+        - Address the client directly like you're presenting findings to a business owner
+        - Use simple, clear language that explains the "why" behind each insight
+        - Balance identifying problems with highlighting opportunities
+        
+        Return only the executive summary text with proper paragraph breaks (use line breaks between paragraphs). No introductions, headings, or sign-offs.
       `;
 
       const response = await openai.chat.completions.create({
