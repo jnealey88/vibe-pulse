@@ -1,6 +1,6 @@
 import { apiRequest } from '@/lib/queryClient';
 import { Metric, Website } from '@/types/metric';
-import { Insight } from '@/types/insight';
+import { Insight, InsightImplementationPlan } from '@/types/insight';
 
 export const ga4Service = {
   getWebsites: async (): Promise<Website[]> => {
@@ -92,6 +92,38 @@ export const ga4Service = {
   }>> => {
     const response = await apiRequest('GET', '/api/ga4-properties');
     return response.json();
+  },
+
+  // Implementation plans methods
+  getImplementationPlans: async (websiteId: number): Promise<InsightImplementationPlan[]> => {
+    const response = await apiRequest('GET', `/api/websites/${websiteId}/implementation-plans`);
+    return response.json();
+  },
+
+  getImplementationPlan: async (planId: number): Promise<InsightImplementationPlan> => {
+    const response = await apiRequest('GET', `/api/implementation-plans/${planId}`);
+    return response.json();
+  },
+
+  generateImplementationPlan: async (websiteId: number, insightIds: number[]): Promise<InsightImplementationPlan> => {
+    const response = await apiRequest('POST', `/api/websites/${websiteId}/implementation-plans`, { insightIds });
+    return response.json();
+  },
+
+  deleteImplementationPlan: async (planId: number): Promise<{ message: string }> => {
+    const response = await apiRequest('DELETE', `/api/implementation-plans/${planId}`);
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return response.json();
+      } else {
+        const text = await response.text();
+        return { message: text || 'Implementation plan deleted successfully' };
+      }
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      return { message: 'Implementation plan deleted, but response parsing failed' };
+    }
   }
 };
 
