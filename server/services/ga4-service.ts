@@ -645,7 +645,7 @@ export const ga4Service = {
       const landingPages = landingPageResponse.data.rows?.map(row => ({
         page: row.dimensionValues?.[0].value,
         visitors: Number(row.metricValues?.[0].value || '0'),
-        bounceRate: `${Number(row.metricValues?.[1].value || '0').toFixed(1)}%`,
+        bounceRate: `${(Number(row.metricValues?.[1].value || '0') * 100).toFixed(1)}%`,
         avgSessionDuration: `${Number(row.metricValues?.[2].value || '0').toFixed(1)}s`
         // Removed conversions per client request
       })) || [];
@@ -654,7 +654,7 @@ export const ga4Service = {
       const trafficSources = trafficSourceResponse.data.rows?.map(row => ({
         source: row.dimensionValues?.[0].value,
         visitors: Number(row.metricValues?.[0].value || '0'),
-        bounceRate: `${Number(row.metricValues?.[1].value || '0').toFixed(1)}%`
+        bounceRate: `${(Number(row.metricValues?.[1].value || '0') * 100).toFixed(1)}%`
         // Removed conversions per client request
       })) || [];
       
