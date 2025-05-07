@@ -153,9 +153,7 @@ const InsightsSummary = ({
               <h4 className="font-medium text-sm text-primary">SUMMARY ANALYSIS</h4>
             </div>
             <div className="text-base leading-relaxed text-gray-700 dark:text-gray-200 font-light">
-              {summary.split('\n\n').map((paragraph, index) => (
-                <p key={index} className="mb-2">{paragraph}</p>
-              ))}
+              <p>{summary}</p>
             </div>
           </div>
         ) : (
