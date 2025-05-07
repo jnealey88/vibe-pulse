@@ -56,10 +56,11 @@ export const storage = {
   },
   
   deleteWebsite: async (id: number) => {
-    // First delete all related records (metrics, insights, reports)
+    // First delete all related records (metrics, insights, reports, implementation plans)
     await db.delete(schema.metrics).where(eq(schema.metrics.websiteId, id));
     await db.delete(schema.insights).where(eq(schema.insights.websiteId, id));
     await db.delete(schema.reports).where(eq(schema.reports.websiteId, id));
+    await db.delete(schema.implementationPlans).where(eq(schema.implementationPlans.websiteId, id));
     
     // Then delete the website itself
     const [deletedWebsite] = await db.delete(schema.websites)
@@ -160,5 +161,41 @@ export const storage = {
       .where(eq(schema.reports.id, id))
       .returning();
     return updatedReport;
+  },
+
+  // Implementation Plans methods
+  getImplementationPlansByWebsiteId: async (websiteId: number) => {
+    return await db.query.implementationPlans.findMany({
+      where: eq(schema.implementationPlans.websiteId, websiteId),
+      orderBy: [desc(schema.implementationPlans.createdAt)],
+    });
+  },
+
+  getImplementationPlanById: async (id: number) => {
+    return await db.query.implementationPlans.findFirst({
+      where: eq(schema.implementationPlans.id, id),
+    });
+  },
+
+  insertImplementationPlan: async (plan: schema.InsertImplementationPlan) => {
+    const [newPlan] = await db.insert(schema.implementationPlans).values(plan).returning();
+    return newPlan;
+  },
+
+  updateImplementationPlan: async (id: number, data: Partial<schema.InsertImplementationPlan>) => {
+    const [updatedPlan] = await db
+      .update(schema.implementationPlans)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(schema.implementationPlans.id, id))
+      .returning();
+    return updatedPlan;
+  },
+
+  deleteImplementationPlan: async (id: number) => {
+    const [deletedPlan] = await db
+      .delete(schema.implementationPlans)
+      .where(eq(schema.implementationPlans.id, id))
+      .returning();
+    return deletedPlan;
   },
 };

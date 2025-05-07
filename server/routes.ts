@@ -14,6 +14,7 @@ declare module 'express-session' {
 import { authController } from "./controllers/auth-controller";
 import { metricsController } from "./controllers/metrics-controller";
 import { insightController } from "./controllers/insight-controller";
+import { implementationPlanController } from "./controllers/implementation-plan-controller";
 
 // Authentication middleware
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
@@ -75,6 +76,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post(`${apiPrefix}/websites/:websiteId/reports`, authenticate, insightController.generateReport);
   app.get(`${apiPrefix}/reports/:reportId`, authenticate, insightController.getReport);
   app.get(`${apiPrefix}/reports`, authenticate, insightController.getUserReports);
+
+  // Implementation Plans routes
+  app.get(`${apiPrefix}/websites/:websiteId/implementation-plans`, authenticate, implementationPlanController.getImplementationPlans);
+  app.get(`${apiPrefix}/implementation-plans/:planId`, authenticate, implementationPlanController.getImplementationPlan);
+  app.post(`${apiPrefix}/websites/:websiteId/implementation-plans`, authenticate, implementationPlanController.generateImplementationPlan);
+  app.delete(`${apiPrefix}/implementation-plans/:planId`, authenticate, implementationPlanController.deleteImplementationPlan);
 
   // Healthcheck
   app.get(`${apiPrefix}/health`, (req, res) => {

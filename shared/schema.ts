@@ -120,6 +120,10 @@ export const reportsRelations = relations(reports, ({ one }) => ({
   website: one(websites, { fields: [reports.websiteId], references: [websites.id] }),
 }));
 
+export const implementationPlansRelations = relations(implementationPlans, ({ one }) => ({
+  website: one(websites, { fields: [implementationPlans.websiteId], references: [websites.id] }),
+}));
+
 // Schemas
 export const userInsertSchema = createInsertSchema(users, {
   email: (schema) => schema.email("Please enter a valid email"),
@@ -146,6 +150,11 @@ export const reportInsertSchema = createInsertSchema(reports, {
   query: (schema) => schema.min(5, "Query must be at least 5 characters"),
 });
 
+export const implementationPlanInsertSchema = createInsertSchema(implementationPlans, {
+  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  summary: (schema) => schema.min(10, "Summary must be at least 10 characters"),
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -161,3 +170,6 @@ export type InsertInsight = typeof insights.$inferInsert;
 
 export type Report = typeof reports.$inferSelect;
 export type InsertReport = typeof reports.$inferInsert;
+
+export type ImplementationPlan = typeof implementationPlans.$inferSelect;
+export type InsertImplementationPlan = typeof implementationPlans.$inferInsert;

@@ -15,6 +15,23 @@ export interface GeneratedInsight {
   recommendations: Recommendation[];
 }
 
+export interface InsightImplementationStep {
+  stepNumber: number;
+  title: string;
+  description: string;
+  priority: 'High' | 'Medium' | 'Low';
+  effort: 'Easy' | 'Medium' | 'Difficult';
+  estimatedTime: string;
+  dependencies?: number[];
+  resources?: string[];
+}
+
+export interface GeneratedImplementationPlan {
+  title: string;
+  summary: string;
+  steps: InsightImplementationStep[];
+}
+
 export const openAiService = {
   // Generate insights based on comprehensive metrics data
   generateInsights: async (
@@ -285,6 +302,99 @@ export const openAiService = {
       console.error("Error generating custom report with OpenAI:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       throw new Error(`Failed to generate report: ${errorMessage}`);
+    }
+  },
+
+  // Generate implementation plan from insights
+  generateImplementationPlan: async (
+    insights: Insight[],
+    websiteDomain: string
+  ): Promise<GeneratedImplementationPlan> => {
+    try {
+      // Prepare insights data for the prompt
+      const insightsData = insights.map(insight => {
+        // Parse recommendations array if it's a string
+        let recommendations = insight.recommendations;
+        if (typeof recommendations === 'string') {
+          try {
+            recommendations = JSON.parse(recommendations);
+          } catch (e) {
+            recommendations = [];
+          }
+        }
+
+        return {
+          title: insight.title,
+          description: insight.description,
+          category: insight.category,
+          impact: insight.impact,
+          recommendations: recommendations
+        };
+      });
+
+      const prompt = `
+        I need a detailed step-by-step implementation plan for addressing multiple website insights for the domain "${websiteDomain}".
+        
+        Here are the insights that need to be addressed:
+        ${insightsData.map((insight, index) => `
+        INSIGHT ${index + 1}: ${insight.title} (${insight.category} - ${insight.impact} Impact)
+        Description: ${insight.description}
+        Recommendations:
+        ${Array.isArray(insight.recommendations) 
+          ? insight.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')
+          : 'No recommendations available.'
+        }
+        `).join('\n')}
+        
+        Based on these insights, create a comprehensive implementation plan that:
+        
+        1. Prioritizes actions based on impact, effort required, and logical dependencies
+        2. Groups related tasks where appropriate
+        3. Provides clear step-by-step instructions for implementation
+        4. Includes estimated time/effort for each step
+        5. Identifies any dependencies between steps
+        6. Suggests resources or tools that might be helpful for each step
+        
+        Return the implementation plan in JSON format with the following structure:
+        {
+          "title": "A clear title for the implementation plan",
+          "summary": "A brief executive summary of the implementation plan",
+          "steps": [
+            {
+              "stepNumber": 1,
+              "title": "Step title",
+              "description": "Detailed step description with clear actions",
+              "priority": "High/Medium/Low",
+              "effort": "Easy/Medium/Difficult",
+              "estimatedTime": "Estimated completion time (e.g., '1-2 hours', '1 day')",
+              "dependencies": [Optional array of step numbers that must be completed first],
+              "resources": [Optional array of resources, tools or references]
+            },
+            ...additional steps
+          ]
+        }
+        
+        Ensure the steps are logical, actionable, and tailored specifically to address the insights provided.
+      `;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        temperature: 0.4, // Lower temperature for more precise planning
+        max_tokens: 12000 // Ensure we have enough tokens for comprehensive plan
+      });
+
+      const content = response.choices[0].message.content;
+      if (!content) {
+        throw new Error("Empty response from OpenAI");
+      }
+
+      return JSON.parse(content);
+    } catch (error: unknown) {
+      console.error("Error generating implementation plan with OpenAI:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Failed to generate implementation plan: ${errorMessage}`);
     }
   },
 };
