@@ -237,18 +237,18 @@ const Dashboard = () => {
           )}
           
           {/* Metrics Overview */}
-          <div className="mb-8">
+          <div>
             <MetricsOverview 
               metrics={metrics || null} 
               isLoading={isLoadingMetrics || syncMetricsMutation.isPending} 
             />
           </div>
           
-          {/* AI Insights - Placed immediately after Website Activity Metrics section */}
-          <div className="mb-8">
+          {/* Remove the placeholder from MetricsOverview component */}
+          <div className="mb-8 -mt-4">
             <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
               <div className="flex items-center justify-between w-full md:w-auto">
-                <h3 className="text-xl font-semibold font-google-sans text-foreground">Smart Insights</h3>
+                <h3 className="text-xl font-semibold font-google-sans text-foreground mb-0">Smart Insights</h3>
                 {selectedWebsite && (
                   <Button 
                     variant="outline" 
