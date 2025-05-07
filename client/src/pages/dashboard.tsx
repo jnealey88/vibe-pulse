@@ -12,6 +12,7 @@ import InsightCard from "@/components/dashboard/InsightCard";
 import InsightsFilter from "@/components/dashboard/InsightsFilter";
 import GenerateImplementationPlanModal from "@/components/dashboard/GenerateImplementationPlanModal";
 import ImplementationPlanDetail from "@/components/dashboard/ImplementationPlanDetail";
+import InsightsSummary from "@/components/dashboard/InsightsSummary";
 
 import AddWebsiteModal from "@/components/dashboard/AddWebsiteModal";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,8 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("insights");
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<InsightImplementationPlan | null>(null);
+  const [insightsSummary, setInsightsSummary] = useState<string | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   
   const { isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
@@ -263,6 +266,41 @@ const Dashboard = () => {
     setSelectedPlan(null);
   };
 
+  // Generate insights summary function
+  const handleGenerateInsightsSummary = async () => {
+    if (!selectedWebsiteId || insights.length === 0) {
+      toast({
+        title: "Cannot generate summary",
+        description: "Please select a website with insights to generate a summary",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingSummary(true);
+    try {
+      const summaryResponse = await ga4Service.generateInsightsSummary(
+        parseInt(selectedWebsiteId),
+        insights,
+        metrics || null
+      );
+      setInsightsSummary(summaryResponse.summary);
+      toast({
+        title: "Summary generated",
+        description: "AI summary of your insights has been created",
+      });
+    } catch (error) {
+      console.error("Error generating insights summary:", error);
+      toast({
+        title: "Summary generation failed",
+        description: error instanceof Error ? error.message : "Failed to generate insights summary",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
   const selectedWebsite = websites?.find(
     (site: Website) => site.id.toString() === selectedWebsiteId
   ) || null;
@@ -408,6 +446,18 @@ const Dashboard = () => {
                 </TabsList>
                 
                 <TabsContent value="insights" className="space-y-4">
+                  {/* Insights Summary */}
+                  {(insights.length > 0 && selectedWebsite) && (
+                    <InsightsSummary
+                      insights={insights}
+                      metrics={metrics || null}
+                      isLoading={isLoadingInsights}
+                      isGenerating={isGeneratingSummary}
+                      onGenerateSummary={handleGenerateInsightsSummary}
+                      summary={insightsSummary}
+                    />
+                  )}
+                  
                   {/* Insight Cards */}
                   {isLoadingInsights || generateInsightsMutation.isPending ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
