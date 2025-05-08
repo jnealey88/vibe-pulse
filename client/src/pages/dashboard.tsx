@@ -135,12 +135,37 @@ const Dashboard = () => {
       if (!selectedWebsiteId) return null;
       return await ga4Service.generateInsights(parseInt(selectedWebsiteId));
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Insights generated",
         description: "New insights have been generated based on your data",
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/websites/${selectedWebsiteId}/insights?category=${filters.category}&impact=${filters.impact}`] });
+      
+      // First invalidate the queries to get fresh insights
+      await queryClient.invalidateQueries({ queryKey: [`/api/websites/${selectedWebsiteId}/insights?category=${filters.category}&impact=${filters.impact}`] });
+      
+      // Now fetch the most recent insights
+      const freshInsights = await queryClient.fetchQuery({
+        queryKey: [`/api/websites/${selectedWebsiteId}/insights?category=${filters.category}&impact=${filters.impact}`]
+      });
+      
+      // Generate summary automatically if we have insights
+      if (freshInsights && freshInsights.length > 0) {
+        setIsGeneratingSummary(true);
+        try {
+          const summaryResponse = await ga4Service.generateInsightsSummary(
+            parseInt(selectedWebsiteId),
+            freshInsights,
+            metrics || null
+          );
+          setInsightsSummary(summaryResponse.summary);
+        } catch (error) {
+          console.error("Error automatically generating insights summary:", error);
+          // Silently fail for auto-generation - no need to show error toast
+        } finally {
+          setIsGeneratingSummary(false);
+        }
+      }
     },
     onError: (error) => {
       toast({
@@ -222,10 +247,7 @@ const Dashboard = () => {
   const handleLoadMoreInsights = () => {
     if (selectedWebsiteId) {
       generateInsightsMutation.mutate();
-      toast({
-        title: "Generating new insights",
-        description: "We're analyzing your data to create fresh insights",
-      });
+      // No need for another toast message as the mutation already shows one
     } else {
       toast({
         title: "No website selected",
