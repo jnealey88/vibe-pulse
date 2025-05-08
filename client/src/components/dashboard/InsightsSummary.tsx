@@ -103,19 +103,20 @@ const InsightsSummary = ({
   const highImpactCount = insightsByImpact['High']?.length || 0;
 
   return (
-    <Card className="mb-4 border-0 shadow-sm">
-      <CardHeader className="pb-0">
+    <Card className="mb-6 border-0 shadow-md overflow-hidden bg-white dark:bg-gray-800/90">
+      {/* Header with gradient background */}
+      <div className="bg-gradient-to-r from-primary/90 to-primary/70 text-white py-4 px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <MessageSquareQuote className="h-5 w-5 mr-2 text-primary" />
-            <CardTitle>Client-Friendly Summary</CardTitle>
+            <MessageSquareQuote className="h-6 w-6 mr-3 text-white/90" />
+            <h2 className="text-xl font-semibold">Executive Summary</h2>
           </div>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={onGenerateSummary}
             disabled={isGenerating || insights.length === 0}
-            className="border-primary border text-primary hover:bg-primary/10"
+            className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
           >
             {isGenerating ? (
               <>
@@ -130,54 +131,72 @@ const InsightsSummary = ({
             )}
           </Button>
         </div>
-      </CardHeader>
-      
-      <CardContent className="pt-4">
+        
+        {/* High-priority badge in header */}
         {highImpactCount > 0 && summary && (
-          <div className="mb-2 flex justify-end">
-            <Badge variant="outline" className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300">
+          <div className="mt-2 inline-block">
+            <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm">
               <AlertTriangle className="h-3 w-3 mr-1" />
-              {highImpactCount} high-priority {highImpactCount === 1 ? 'issue' : 'issues'}
+              {highImpactCount} high-priority {highImpactCount === 1 ? 'issue' : 'issues'} detected
             </Badge>
           </div>
         )}
-
+      </div>
+      
+      <CardContent className="pt-6 pb-6 px-6">
         {summary ? (
-          <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-6 mb-5 border-l-4 border-primary">
-            <div className="text-lg md:text-xl leading-relaxed text-gray-700 dark:text-gray-100 font-medium">
+          <div className="mb-6">
+            <div className="text-lg md:text-xl leading-relaxed text-gray-800 dark:text-gray-100 font-medium border-l-4 border-primary pl-5 py-1">
               <p>{summary}</p>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center p-6 border border-dashed rounded-md mb-5 bg-gray-50 dark:bg-gray-800/50">
-            <Lightbulb className="h-5 w-5 mr-2 text-primary" />
-            <p className="text-muted-foreground">
-              Generate a simple summary for your client.
+          <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg mb-5 bg-gray-50 dark:bg-gray-800/50">
+            <div className="rounded-full bg-primary/10 p-3 mb-3">
+              <Lightbulb className="h-6 w-6 text-primary" />
+            </div>
+            <p className="text-center text-muted-foreground">
+              Generate a simple, client-friendly summary of your website's performance.
             </p>
           </div>
         )}
         
         {summary && (
-          <div className="mt-3 mb-1 flex flex-wrap gap-2 justify-center">
-            {Object.entries(insightsByCategory)
-              .sort(([,a], [,b]) => b.length - a.length) // Sort by count, descending
-              .slice(0, 3) // Show only top 3 categories
-              .map(([category, categoryInsights]) => (
-                <Badge key={category} variant="outline" className="bg-primary/5 text-xs">
-                  {category}: {categoryInsights.length}
-                </Badge>
-            ))}
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="bg-slate-50 dark:bg-slate-800/40 rounded-lg p-4 border border-slate-100 dark:border-slate-700/40">
+              <div className="flex items-center gap-2 mb-3">
+                <LineChart className="h-4 w-4 text-primary" />
+                <h3 className="font-medium text-gray-800 dark:text-gray-200 text-sm">Top Categories</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(insightsByCategory)
+                  .sort(([,a], [,b]) => b.length - a.length) // Sort by count, descending
+                  .slice(0, 3) // Show only top 3 categories
+                  .map(([category, categoryInsights]) => (
+                    <Badge key={category} variant="outline" className="bg-white dark:bg-gray-700/50 text-xs">
+                      {category}: {categoryInsights.length}
+                    </Badge>
+                ))}
+              </div>
+            </div>
             
-            {/* Show only High and Medium impacts if they exist */}
-            {['High', 'Medium'].map(impact => {
-              const count = insightsByImpact[impact]?.length || 0;
-              if (count === 0) return null;
-              return (
-                <Badge key={impact} className={`${getImpactColor(impact)} text-xs`}>
-                  {impact} priority: {count}
-                </Badge>
-              );
-            })}
+            <div className="bg-slate-50 dark:bg-slate-800/40 rounded-lg p-4 border border-slate-100 dark:border-slate-700/40">
+              <div className="flex items-center gap-2 mb-3">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                <h3 className="font-medium text-gray-800 dark:text-gray-200 text-sm">Priority Levels</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {['High', 'Medium', 'Low'].map(impact => {
+                  const count = insightsByImpact[impact]?.length || 0;
+                  if (count === 0) return null;
+                  return (
+                    <Badge key={impact} className={`${getImpactColor(impact)} text-xs`}>
+                      {impact}: {count}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
       </CardContent>

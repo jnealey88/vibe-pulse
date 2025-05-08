@@ -1,7 +1,9 @@
 import { Insight } from "@/types/insight";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { getRelativeTime } from "@/lib/utils/date-utils";
+import { ChevronRight, Calendar, Tag } from "lucide-react";
 
 interface InsightCardProps {
   insight: Insight;
@@ -55,43 +57,65 @@ const InsightCard = ({ insight, onViewDetails }: InsightCardProps) => {
   const impactColors = getImpactColor(insight.impact);
 
   return (
-    <Card className="insight-card border border-border shadow-sm overflow-hidden">
-      <div className="p-5">
+    <Card className="insight-card overflow-hidden hover:shadow-md transition-all duration-300 border-0 shadow-sm">
+      {/* Colored top border based on impact */}
+      <div className={`h-1 w-full ${impactColors.text} bg-current`}></div>
+      
+      <div className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-2">
-            <span className={`material-icons ${impactColors.text}`}>{insight.icon}</span>
-            <span className="font-google-sans font-medium">{insight.title}</span>
+            <div className={`${impactColors.bg} rounded-full p-2 flex items-center justify-center`}>
+              <span className={`material-icons ${impactColors.text} text-base`}>{insight.icon}</span>
+            </div>
+            <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">{insight.title}</h3>
           </div>
-          <div className={`${impactColors.bg} ${impactColors.text} px-3 py-1 rounded-full text-xs font-google-sans`}>
+          <Badge variant="outline" className={`${impactColors.bg} ${impactColors.text} font-normal`}>
             {insight.impact} Impact
-          </div>
+          </Badge>
         </div>
         
-        <p className="mb-4 text-foreground">{insight.description}</p>
+        <p className="mb-6 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{insight.description}</p>
         
-        <div className="bg-muted rounded-md p-3 mb-4">
-          <h4 className="font-google-sans font-medium mb-2 flex items-center gap-1">
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-6 border border-slate-100 dark:border-slate-700/50">
+          <h4 className="font-medium mb-3 text-gray-800 dark:text-gray-200 flex items-center gap-2">
             <span className="material-icons text-primary text-sm">lightbulb</span>
             Recommended Actions
           </h4>
-          <ul className="list-disc list-inside space-y-1 text-sm">
+          <ul className="space-y-2">
             {recommendations.map((recommendation: string, index: number) => (
-              <li key={index}>{recommendation}</li>
+              <li key={index} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <div className="rounded-full bg-primary/10 p-1 mt-0.5 flex-shrink-0">
+                  <ChevronRight className="h-3 w-3 text-primary" />
+                </div>
+                <span className="leading-tight">{recommendation}</span>
+              </li>
             ))}
           </ul>
         </div>
         
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">Category: {insight.category}</span>
-          <span className="text-sm text-muted-foreground">Detected: {getRelativeTime(insight.detectedAt)}</span>
+        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-1">
+            <Tag className="h-3 w-3" />
+            <span>{insight.category}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            <span>{getRelativeTime(insight.detectedAt)}</span>
+          </div>
         </div>
       </div>
-      <div className="bg-muted px-5 py-3 flex justify-between items-center">
+      <div className="bg-slate-50 dark:bg-slate-800/50 px-6 py-3 flex justify-between items-center border-t border-slate-100 dark:border-slate-700/50">
         <div className="flex items-center">
-          <span className="material-icons text-muted-foreground mr-2 text-sm">assessment</span>
-          <span className="text-sm text-muted-foreground">View detailed analysis</span>
+          <span className="material-icons text-primary mr-2 text-sm">assessment</span>
+          <span className="text-xs text-gray-600 dark:text-gray-300">View analysis</span>
         </div>
-        <Button size="sm" onClick={() => onViewDetails(insight.id)}>Take Action</Button>
+        <Button 
+          size="sm" 
+          onClick={() => onViewDetails(insight.id)}
+          className="bg-primary hover:bg-primary/90 text-white rounded-full px-4"
+        >
+          Take Action
+        </Button>
       </div>
     </Card>
   );
