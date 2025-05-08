@@ -15,7 +15,7 @@ interface HeaderProps {
   onWebsiteChange: (websiteId: string) => void;
   dateRange: string;
   onDateRangeChange: (range: string) => void;
-  onMenuToggle: () => void;
+  onMenuToggle?: () => void; // Make this optional
 }
 
 const Header = ({
@@ -80,15 +80,12 @@ const Header = ({
 
   return (
     <header className="bg-white border-b border-border py-4 px-6 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-      <div className="flex items-center gap-3 lg:hidden">
-        <button onClick={onMenuToggle} className="text-muted-foreground">
-          <span className="material-icons">menu</span>
-        </button>
+      <div className="flex items-center gap-3">
         <h1 className="text-xl font-semibold font-google-sans text-primary">Airo Pulse</h1>
       </div>
 
       {/* Website Selector */}
-      <div className={`${isMobile ? 'hidden' : 'flex'} md:flex items-center gap-2`}>
+      <div className="flex items-center gap-2">
         <span className="material-icons text-muted-foreground">language</span>
         <div className="flex items-center gap-2">
           <Select value={selectedWebsite?.id?.toString() || ""} onValueChange={onWebsiteChange}>

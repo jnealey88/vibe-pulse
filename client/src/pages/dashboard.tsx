@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { InsightFilters, InsightImplementationPlan, Insight } from "@/types/insight";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import MetricsOverview from "@/components/dashboard/MetricsOverview";
 import WebsiteActivityMetrics from "@/components/dashboard/WebsiteActivityMetrics";
@@ -25,7 +24,6 @@ import ga4Service from "@/lib/ga4-service";
 import { Website, Metric } from "@/types/metric";
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState("30"); // Default to 30 days
   const [filters, setFilters] = useState<InsightFilters>({
@@ -328,17 +326,14 @@ const Dashboard = () => {
   ) || null;
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
-      <div className="flex-1 lg:ml-64">
+    <div className="min-h-screen bg-background">
+      <div className="flex-1 w-full">
         <Header
           websites={websites || []}
           selectedWebsite={selectedWebsite}
           onWebsiteChange={handleWebsiteChange}
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
-          onMenuToggle={() => setSidebarOpen(true)}
         />
         
         <main className="py-6 px-6">
